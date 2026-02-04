@@ -1,2 +1,3 @@
-# jj-store
-Loja online e backoffice
+# JJ Store
+
+Monorepo inicial da loja online (Angular + Node + PostgreSQL).

@@ -1,0 +1,10 @@
+{
+  "name": "jj-store",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "lint": "npm --prefix backend run lint && npm --prefix frontend run lint",
+    "test": "npm --prefix backend run test && npm --prefix frontend run test -- --watch=false",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build"
+  }
+}

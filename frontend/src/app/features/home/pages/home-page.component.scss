@@ -1,0 +1,45 @@
+.hero {
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    font-size: clamp(2rem, 6vw, 3rem);
+    letter-spacing: 0.03em;
+  }
+
+  .lead {
+    margin-top: 0.75rem;
+    color: #2f3945;
+  }
+}
+
+.feedback {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.card {
+  border-radius: 0.9rem;
+  padding: 1rem;
+  border: 1px solid transparent;
+  background: #fdfefe;
+
+  h2 {
+    margin-top: 0;
+  }
+
+  p {
+    margin-bottom: 0;
+  }
+}
+
+.success {
+  border-color: #6fcf97;
+  background: #f1fff6;
+}
+
+.error {
+  border-color: #ff8a8a;
+  background: #fff4f4;
+}

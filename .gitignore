@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+.nx/
+.angular/
+backend/dist/
+backend/coverage/
+frontend/dist/
+frontend/coverage/
+*.log

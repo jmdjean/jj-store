@@ -1,0 +1,41 @@
+:host {
+  display: block;
+}
+
+.app-shell {
+  min-height: 100dvh;
+  padding: 2rem 1.25rem;
+  background:
+    radial-gradient(circle at 90% 10%, rgba(17, 138, 178, 0.18), transparent 40%),
+    radial-gradient(circle at 10% 90%, rgba(6, 214, 160, 0.2), transparent 35%),
+    #f8fbff;
+}
+
+.app-header {
+  margin-inline: auto;
+  max-width: 860px;
+
+  .eyebrow {
+    margin: 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #0f6f8f;
+  }
+
+  h1 {
+    margin: 0.25rem 0 1rem;
+    font-size: clamp(2rem, 8vw, 3.25rem);
+    line-height: 1.05;
+  }
+}
+
+.app-content {
+  margin-inline: auto;
+  max-width: 860px;
+  border-radius: 1rem;
+  border: 1px solid #d8e6f5;
+  background: #ffffffcf;
+  padding: 1.25rem;
+  box-shadow: 0 16px 48px rgba(16, 47, 72, 0.12);
+}
