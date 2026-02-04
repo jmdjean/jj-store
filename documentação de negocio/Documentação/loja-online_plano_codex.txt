@@ -1,0 +1,411 @@
+# PROJETO: Loja Online (Angular 21 + Node.js + PostgreSQL + RAG Vetorial)
+
+Este documento é um **briefing técnico rico** + **plano de execução em etapas** para ser usado com agentes tipo **Codex CLI / Claude Code** dentro do repositório do código-fonte.  
+Objetivo: Construir uma loja online profissional, com **fluxo completo de compra**, **gestão de estoque/vendas** e um recurso de **pesquisa via RAG** (base vetorial) sincronizado com o banco relacional.
+
+---
+
+## 1) Visão geral do produto
+
+Uma loja online com três perfis de usuário:
+- **Admin**: acesso total (todas as telas administrativas, relatórios, estoque, vendas, RAG, configurações).
+- **Manager**: acesso administrativo restrito ao gerenciamento (estoque, vendas, RAG), sem “tudo”, mas com permissões de operação. (Obs.: como foi definido no final, vamos ter **apenas 1 estoque** e não há seleção por loja.)
+- **Customer**: usuário comprador; navega produtos, carrinho, checkout, “Minhas compras”, perfil/endereço e pode cancelar pedido dentro da regra de 3 dias *se ainda não entregue*.
+
+Tecnologias:
+- **Frontend**: Angular 21 (app SPA), UI profissional (layout de e-commerce moderno), roteamento, guards por perfil, state management leve (signals/rxjs) conforme necessidade.
+- **Backend**: Node.js (API REST), autenticação JWT, RBAC (controle de acesso por papel).
+- **Banco relacional**: PostgreSQL (produtos, estoque, pedidos, usuários, auditoria, etc.).
+- **Banco vetorial (RAG)**: 1 base vetorial (p.ex. pgvector no PostgreSQL, ou um serviço vetorial externo; a implementação pode ser escolhida depois).  
+  Regra: ao cadastrar/atualizar produto no relacional, gerar um texto em **Markdown** e **indexar** no vetor para permitir busca semântica.
+
+---
+
+## 2) Requisitos funcionais
+
+### 2.1 Customer (comprador)
+- Catálogo de produtos:
+  - Listagem com paginação, filtros (categoria, preço, texto), busca simples.
+  - Página de detalhes do produto (nome, descrição, categoria, preço, imagem opcional, peso, disponibilidade).
+- Carrinho:
+  - Adicionar/remover, alterar quantidade, calcular subtotal/frete (frete pode ser placeholder inicialmente).
+- Autenticação no checkout:
+  - O customer pode navegar sem login, mas para finalizar compra deve estar logado.
+- Finalização de compra:
+  - Criar pedido com itens, quantidades, preços no momento da compra, endereço de entrega, status inicial.
+  - Baixar estoque conforme itens do pedido (transação).
+- Minhas compras:
+  - Listar pedidos do customer, detalhes do pedido, status.
+- Perfil do customer:
+  - Tela para atualizar endereço, telefone, nome, e-mail etc.
+- Regra de cancelamento:
+  - Se o pedido **ainda não foi entregue** e **não passaram 3 dias** desde a criação do pedido, customer pode cancelar.
+  - Cancelar => muda status, devolve estoque (transação), registra auditoria.
+
+### 2.2 Admin / Manager (operacional)
+- Login e dashboard administrativo:
+  - Cards de resumo: vendas, pedidos por status, estoque baixo, etc. (inicialmente simples)
+- Gestão de produtos/estoque:
+  - CRUD de produto com:
+    - nome, descrição, categoria, quantidade, peso, preço de compra, preço de venda, imagem opcional.
+  - Ao salvar no relacional, também deve:
+    - gerar Markdown do produto
+    - indexar no banco vetorial RAG (upsert por id do produto)
+- Controle de vendas/pedidos:
+  - Listar pedidos, filtrar por status, ver detalhes.
+  - Alterar status (ex.: “Pago”, “Em separação”, “Enviado”, “Entregue”), com auditoria.
+- Tela “Pesquisar RAG”:
+  - Campo textarea + botão “Pesquisar”
+  - Backend consulta base vetorial e retorna uma resposta com contexto + referências (pelo menos IDs dos produtos e trechos).
+  - Frontend exibe resposta e lista “fontes” (produtos sugeridos).
+
+---
+
+## 3) Requisitos não funcionais
+
+- UI/UX profissional:
+  - Design moderno de e-commerce: header com busca, carrinho, conta; navegação clara; telas responsivas.
+- Segurança:
+  - Hash de senha (bcrypt/argon2), JWT com expiração, refresh token (opcional em etapa posterior).
+  - RBAC no backend (Admin/Manager/Customer).
+  - Validação de input (DTO + schema).
+- Observabilidade:
+  - Logs estruturados no backend.
+  - Auditoria de ações administrativas relevantes (criar/editar produto, alterar status pedido, cancelamento, etc.).
+- Qualidade:
+  - Commit por etapa com mensagem clara.
+  - Testes (mínimo): unit no backend (services) e no front (guards/services), conforme crescimento.
+
+---
+
+## 4) Modelagem de dados (base)
+
+### 4.1 Tabelas principais (PostgreSQL)
+**users**
+- id (uuid)
+- role (enum: ADMIN, MANAGER, CUSTOMER)
+- email (unique, nullable p/ manager/admin se usar username)
+- username (unique, p/ admin/manager)
+- password_hash
+- phone (nullable)
+- created_at, updated_at
+
+**customers_profile**
+- user_id (fk users.id)
+- cpf (unique)
+- full_name
+- birth_date ou age (preferir birth_date)
+- address fields (street, number, district, city, state, zip, complement)
+- created_at, updated_at
+
+**products**
+- id (uuid)
+- name
+- description
+- category
+- purchase_price
+- sale_price
+- weight
+- image_url (nullable)
+- created_at, updated_at
+
+**inventory**
+- product_id (fk products.id)
+- quantity (int >= 0)
+- updated_at
+
+**orders**
+- id (uuid)
+- customer_user_id (fk users.id)
+- status (enum: CREATED, PAID, PICKING, SHIPPED, DELIVERED, CANCELED)
+- total_amount
+- shipping_address_snapshot (jsonb ou colunas)
+- created_at, updated_at
+
+**order_items**
+- id (uuid)
+- order_id (fk orders.id)
+- product_id (fk products.id)
+- product_name_snapshot
+- unit_price_snapshot
+- quantity
+- subtotal
+
+**audit_log**
+- id (uuid)
+- actor_user_id (fk users.id)
+- action (string/enum)
+- entity_type (string)
+- entity_id (uuid/string)
+- metadata (jsonb)
+- created_at
+
+> Observação: “snapshot” evita inconsistência se o produto mudar depois do pedido.
+
+### 4.2 Base vetorial (RAG)
+Uma coleção/índice com documentos:
+- doc_id = product_id
+- content_markdown = markdown do produto
+- embedding = vetor (gerado por modelo)
+- metadata: category, sale_price, etc (opcional)
+
+Opções de implementação:
+- **pgvector** dentro do PostgreSQL (recomendado pela simplicidade de infraestrutura).
+- Ou serviço externo (ex.: Qdrant, Pinecone).  
+A escolha pode virar uma etapa; a versão 1 pode ser pgvector.
+
+---
+
+## 5) Regras de sincronização Relacional -> Vetorial (RAG)
+
+### 5.1 Geração do Markdown do produto
+Ao criar/atualizar produto:
+- montar um markdown padrão, ex.:
+
+# {name}
+- **Categoria:** {category}
+- **Preço:** R$ {sale_price}
+- **Peso:** {weight} kg
+- **Descrição:** {description}
+- **Estoque:** {quantity}
+- **Imagem:** {image_url ou "não informado"}
+
+### 5.2 Indexação
+- Após commit bem-sucedido no relacional (produto + estoque), gerar embedding e upsert no índice vetorial.
+- Em caso de falha no vetor:
+  - estratégia inicial: registrar erro e reprocessar via job/fila depois (pode ser etapa futura).
+  - versão 1: tentar sincronicamente e, se falhar, ainda salvar no relacional mas registrar em log/auditoria um “RAG_OUT_OF_SYNC”.
+
+---
+
+## 6) Backend (Node.js) – arquitetura sugerida
+
+- Camadas:
+  - **routes/controllers**: validação + orquestração
+  - **services**: regras de negócio (checkout, estoque, cancelamento, RAG)
+  - **repositories/dao**: acesso ao PostgreSQL
+  - **auth**: login, guards, RBAC
+  - **rag**: client/adapter do vetor (pgvector ou externo)
+
+- Endpoints principais (v1):
+  - Auth:
+    - POST /auth/login (admin/manager/customer)
+    - POST /auth/register-customer
+  - Customer:
+    - GET /products (public)
+    - GET /products/:id (public)
+    - POST /cart/checkout (customer)
+    - GET /me/orders (customer)
+    - GET /me/profile (customer)
+    - PUT /me/profile (customer)
+    - POST /me/orders/:id/cancel (customer) [regra 3 dias e não entregue]
+  - Admin/Manager:
+    - POST /admin/products (admin|manager)
+    - PUT /admin/products/:id (admin|manager)
+    - GET /admin/products (admin|manager)
+    - GET /admin/orders (admin|manager)
+    - PUT /admin/orders/:id/status (admin|manager; talvez admin somente para alguns status)
+    - POST /admin/rag/search (admin|manager)
+
+---
+
+## 7) Frontend (Angular 21) – arquitetura sugerida
+
+- Módulos/áreas:
+  - Public: home, catálogo, produto detalhe, carrinho
+  - Auth: login, register-customer
+  - Customer: minhas compras, perfil
+  - Admin/Manager: dashboard, produtos, pedidos, RAG search
+- Guards:
+  - authGuard (logado)
+  - roleGuard (ADMIN, MANAGER)
+- UI:
+  - Layout com header fixo, menu, breadcrumbs, cards de produto, lista responsiva.
+  - Componentes reutilizáveis: product-card, product-grid, price-tag, order-status-badge.
+- State:
+  - carrinho em serviço com persistência local (localStorage) + sincronização ao logar.
+  - usuário logado em AuthService (token, role).
+
+---
+
+## 8) Fluxos críticos
+
+### 8.1 Compra (Customer)
+1) Cliente adiciona itens ao carrinho
+2) Vai ao checkout
+3) Se não logado, redirecionar para login e voltar ao checkout
+4) Finaliza compra (cria pedido + itens + baixa estoque em transação)
+5) Exibe confirmação
+6) “Minhas compras” lista pedidos
+
+### 8.2 Cancelamento (Customer)
+- Se status != DELIVERED e created_at <= agora - 3 dias => pode cancelar
+- Cancelamento devolve estoque e seta status CANCELED
+
+### 8.3 Cadastro/Atualização de Produto (Admin/Manager)
+- CRUD no relacional
+- Gera markdown
+- Indexa no vetor RAG (upsert)
+
+### 8.4 Pesquisa RAG (Admin/Manager)
+- Usuário digita pergunta (ex.: “Produtos leves para viagem com preço até 100”)
+- Backend:
+  - gera embedding da query
+  - busca topK similares
+  - monta resposta: v1 pode retornar “resultados relevantes” + trechos
+  - v2 (futura) usa LLM para resposta final com contexto
+- Frontend mostra resposta + lista de produtos sugeridos
+
+---
+
+## 9) Estratégia de execução (em etapas pequenas + commits)
+
+IMPORTANTE: **Não implementar tudo de uma vez.** Dividir em etapas com tarefas claras.  
+Cada etapa deve terminar com:
+- build passando
+- migrations aplicadas
+- endpoints básicos funcionando
+- tela mínima integrada quando aplicável
+- **commit** com mensagem descritiva
+
+Abaixo um roadmap sugerido (pode ser adaptado no repositório):
+
+### ETAPA 0 — Setup do repositório e ferramentas
+- Criar estrutura mono-repo (ou duas pastas): `frontend/` (Angular) e `backend/` (Node).
+- Docker compose (Postgres + opcional pgvector) + scripts.
+- ESLint/Prettier/EditorConfig, husky (opcional).
+- Commit: `chore: bootstrap monorepo (frontend+backend) with docker postgres`
+
+### ETAPA 1 — Autenticação + RBAC base
+- Backend:
+  - users table, seed admin
+  - login JWT
+  - middleware RBAC
+- Frontend:
+  - login page
+  - guards por role
+- Commit: `feat(auth): add JWT login and role-based access (admin/manager/customer)`
+
+### ETAPA 2 — Cadastro de Customer + perfil
+- Backend:
+  - register-customer (cpf, email, nome, birth_date, etc)
+  - get/update profile
+- Frontend:
+  - registro customer
+  - tela perfil
+- Commit: `feat(customer): customer registration and profile management`
+
+### ETAPA 3 — Catálogo público + detalhes de produto
+- Backend:
+  - GET products + filters/pagination
+  - GET product by id
+- Frontend:
+  - home/catalog
+  - product details
+- Commit: `feat(catalog): public product listing and detail pages`
+
+### ETAPA 4 — Carrinho e checkout (sem pagamento real)
+- Frontend:
+  - carrinho local
+  - checkout + exigir login
+- Backend:
+  - criar pedido + itens
+  - baixar estoque com transação
+- Commit: `feat(order): cart checkout creates orders and updates inventory`
+
+### ETAPA 5 — Minhas compras + cancelamento por regra 3 dias
+- Backend:
+  - listar pedidos do customer
+  - cancelar pedido (valida regra)
+- Frontend:
+  - minhas compras (lista+detalhes)
+  - botão cancelar quando permitido
+- Commit: `feat(customer-orders): my orders screen and cancel policy (<=3 days & not delivered)`
+
+### ETAPA 6 — Admin/Manager: CRUD de produto + estoque
+- Backend:
+  - endpoints /admin/products
+  - validação DTO
+  - auditoria básica
+- Frontend:
+  - telas admin produtos (list/create/edit)
+- Commit: `feat(admin): product and inventory management UI/API`
+
+### ETAPA 7 — RAG v1: indexação vetorial e busca
+- Backend:
+  - integração pgvector (ou adapter)
+  - gerar markdown do produto
+  - upsert embeddings ao salvar produto
+  - endpoint /admin/rag/search retornando topK docs
+- Frontend:
+  - tela “Pesquisar RAG”
+- Commit: `feat(rag): sync products to vector index and add semantic search screen`
+
+### ETAPA 8 — Admin/Manager: controle de vendas/pedidos
+- Backend:
+  - listar pedidos global
+  - atualizar status com auditoria
+- Frontend:
+  - tela pedidos + filtros + update status
+- Commit: `feat(admin-orders): admin order management and status workflow`
+
+---
+
+## 10) Convenções de commits (sugestão)
+- `chore:` setup, tooling
+- `feat:` feature nova
+- `fix:` correções
+- `refactor:` refatoração sem mudança funcional
+- `test:` testes
+- `docs:` documentação
+
+---
+
+## 11) Como usar este documento com Codex (prompt base)
+
+Use o texto abaixo como “prompt mestre” no Codex/agent, e depois execute as etapas uma a uma:
+
+PROMPT MESTRE PARA O CODEX / AGENTE
+----------------------------------
+Você está trabalhando em um repositório que implementará uma Loja Online com Angular 21 (frontend), Node.js (backend) e PostgreSQL (banco relacional), além de uma base vetorial para RAG sincronizada com produtos.
+Requisitos principais:
+- Perfis: ADMIN, MANAGER, CUSTOMER com RBAC (JWT).
+- Customer: catálogo, carrinho, checkout, minhas compras, perfil, cancelamento em até 3 dias se não entregue.
+- Admin/Manager: CRUD de produtos e estoque, pedidos/vendas, e uma tela para pesquisar via RAG.
+- Ao criar/editar produto: salvar no relacional, gerar markdown e indexar no vetor (upsert).
+Regras:
+- Entregar em pequenas etapas (roadmap). Cada etapa finaliza com build ok e um commit descritivo.
+- Siga boas práticas de arquitetura (camadas no backend, guards no Angular).
+- Não invente dependências desnecessárias; prefira soluções simples (pgvector é aceitável).
+- Mantenha UI profissional (layout de loja, responsivo).
+Agora implemente a ETAPA N conforme o arquivo de tarefas correspondente em /tasks.
+----------------------------------
+
+---
+
+## 12) Estrutura de pasta sugerida para tarefas
+
+Criaremos uma pasta no repo:
+- /tasks
+  - 00-bootstrap.md
+  - 01-auth-rbac.md
+  - 02-customer-profile.md
+  - 03-catalog.md
+  - 04-cart-checkout.md
+  - 05-my-orders-cancel.md
+  - 06-admin-products-inventory.md
+  - 07-rag-semantic-search.md
+  - 08-admin-orders.md
+
+Cada arquivo deve conter:
+- Objetivo
+- Checklist de tasks
+- Critérios de aceite
+- Rotas/Endpoints esperados
+- Migrations necessárias
+- Detalhes de UI (quando for frontend)
+- Comando(s) para rodar/testar
+
+---
+
+FIM.
