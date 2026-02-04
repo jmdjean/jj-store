@@ -1,0 +1,74 @@
+﻿.checkout-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1rem 1rem 3rem;
+}
+
+.page-header {
+  margin: 1.5rem 0;
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
+.page-header p {
+  margin: 0.5rem 0 0;
+  color: #5a5a5a;
+}
+
+.checkout-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.address-card,
+.summary-card,
+.state-card {
+  background: #fff;
+  border: 1px solid #ead8c7;
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.address-card h2,
+.summary-card h2,
+.state-card h2 {
+  margin-top: 0;
+}
+
+.error {
+  color: #b42318;
+}
+
+.state-card--success {
+  border-color: #84cc16;
+}
+
+button {
+  border: 0;
+  background: #3f2e1e;
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+  cursor: pointer;
+}
+
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button.ghost {
+  background: transparent;
+  border: 1px solid #c89f74;
+  color: #3f2e1e;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 960px) {
+  .checkout-layout {
+    grid-template-columns: 1fr 320px;
+    align-items: start;
+  }
+}

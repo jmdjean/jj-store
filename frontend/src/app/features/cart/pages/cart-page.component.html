@@ -1,0 +1,60 @@
+﻿<section class="cart-page">
+  <app-store-header
+    [searchValue]="''"
+    [cartItems]="cartFacade.totalItems()"
+    (searchChange)="onSearch($event)"
+  />
+
+  <header class="page-header">
+    <h1>Seu carrinho</h1>
+    <p>Revise os itens antes de seguir para o checkout.</p>
+  </header>
+
+  @if (cartFacade.cartFeedback()) {
+    <div class="state-card" role="status">{{ cartFacade.cartFeedback() }}</div>
+  }
+
+  @if (!cartFacade.hasItems()) {
+    <div class="state-card">
+      <p>Seu carrinho está vazio.</p>
+      <button type="button" (click)="goToCatalog()">Continuar comprando</button>
+    </div>
+  } @else {
+    <div class="cart-layout">
+      <ul class="cart-items">
+        @for (item of cartFacade.items(); track item.id) {
+          <li>
+            <img
+              [src]="item.imageUrl || 'https://placehold.co/240x180/f8efe5/8e6e4f?text=Sem+Imagem'"
+              [alt]="item.name"
+            />
+
+            <div class="item-content">
+              <h2>{{ item.name }}</h2>
+              <p>{{ formatPrice(item.price) }} cada</p>
+
+              <div class="item-actions">
+                <button type="button" (click)="decreaseQuantity(item.id, item.quantity)">-</button>
+                <span>{{ item.quantity }}</span>
+                <button type="button" (click)="increaseQuantity(item.id, item.quantity)">+</button>
+                <button type="button" class="ghost" (click)="removeItem(item.id)">Remover</button>
+              </div>
+            </div>
+          </li>
+        }
+      </ul>
+
+      <aside class="summary-card">
+        <h3>Resumo</h3>
+        <p>
+          Itens <strong>{{ cartFacade.totalItems() }}</strong>
+        </p>
+        <p>
+          Subtotal <strong>{{ formatPrice(cartFacade.subtotal()) }}</strong>
+        </p>
+
+        <button type="button" (click)="goToCheckout()">Finalizar compra</button>
+      </aside>
+    </div>
+  }
+</section>

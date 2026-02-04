@@ -1,0 +1,67 @@
+﻿<section class="checkout-page">
+  <app-store-header
+    [searchValue]="''"
+    [cartItems]="cartFacade.totalItems()"
+    (searchChange)="onSearch($event)"
+  />
+
+  <header class="page-header">
+    <h1>Checkout</h1>
+    <p>Confirme os dados de entrega e finalize a compra.</p>
+  </header>
+
+  @if (!cartFacade.hasItems() && !cartFacade.hasCheckoutSuccess()) {
+    <div class="state-card" role="status">
+      <p>Seu carrinho está vazio.</p>
+      <button type="button" (click)="backToCart()">Voltar ao carrinho</button>
+    </div>
+  } @else if (cartFacade.hasCheckoutSuccess()) {
+    <div class="state-card state-card--success" role="status">
+      <h2>Pedido confirmado</h2>
+      <p>{{ cartFacade.checkoutMessage() }}</p>
+      <p><strong>Número do pedido:</strong> {{ cartFacade.checkoutOrderId() }}</p>
+      <button type="button" (click)="goToCatalog()">Voltar ao catálogo</button>
+    </div>
+  } @else {
+    <div class="checkout-layout">
+      <article class="address-card">
+        <h2>Endereço de entrega</h2>
+
+        @if (cartFacade.addressLoading()) {
+          <p>Carregando endereço...</p>
+        } @else if (cartFacade.addressError()) {
+          <p class="error" role="alert">{{ cartFacade.addressError() }}</p>
+        } @else if (cartFacade.profileAddress(); as address) {
+          <p>{{ address.street }}, {{ address.streetNumber }}</p>
+          <p>{{ address.neighborhood }} - {{ address.city }}/{{ address.state }}</p>
+          <p>CEP: {{ address.postalCode }}</p>
+          @if (address.complement) {
+            <p>Complemento: {{ address.complement }}</p>
+          }
+        } @else {
+          <p class="error">Não encontramos endereço no seu perfil.</p>
+        }
+      </article>
+
+      <aside class="summary-card">
+        <h2>Resumo do pedido</h2>
+        <p>Itens: {{ cartFacade.totalItems() }}</p>
+        <p>Total: <strong>{{ formatPrice(cartFacade.subtotal()) }}</strong></p>
+
+        @if (cartFacade.checkoutError()) {
+          <p class="error" role="alert">{{ cartFacade.checkoutError() }}</p>
+        }
+
+        <button
+          type="button"
+          [disabled]="cartFacade.checkoutLoading() || cartFacade.addressLoading()"
+          (click)="finalizeCheckout()"
+        >
+          {{ cartFacade.checkoutLoading() ? 'Finalizando...' : 'Confirmar compra' }}
+        </button>
+
+        <button type="button" class="ghost" (click)="backToCart()">Voltar ao carrinho</button>
+      </aside>
+    </div>
+  }
+</section>

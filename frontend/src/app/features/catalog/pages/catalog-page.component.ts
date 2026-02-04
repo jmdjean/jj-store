@@ -4,6 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ProductCardComponent } from '../components/product-card/product-card.component';
 import { StoreHeaderComponent } from '../components/store-header/store-header.component';
 import { CatalogFacade } from '../facade/catalog.facade';
+import { CartFacade } from '../../cart/facade/cart.facade';
+import type { CatalogProduct } from '../models/catalog.models';
 
 @Component({
   selector: 'app-catalog-page',
@@ -18,6 +20,7 @@ export class CatalogPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   protected readonly facade = inject(CatalogFacade);
+  protected readonly cartFacade = inject(CartFacade);
   protected readonly categoryOptions = ['Acessórios', 'Casa', 'Eletrônicos', 'Eletroportáteis', 'Móveis'];
 
   protected readonly filtersForm = this.formBuilder.nonNullable.group({
@@ -75,6 +78,11 @@ export class CatalogPageComponent implements OnInit {
     }
 
     this.loadCatalogWithCurrentFilters(page);
+  }
+
+  // Adds a catalog product to the local cart and updates feedback state.
+  protected addToCart(product: CatalogProduct): void {
+    this.cartFacade.addCatalogProduct(product);
   }
 
   // Loads catalog data using current form filters and page selection.

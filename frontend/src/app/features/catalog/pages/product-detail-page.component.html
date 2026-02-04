@@ -1,7 +1,15 @@
-<section class="detail-page">
-  <app-store-header [searchValue]="''" (searchChange)="onSearch($event)" />
+﻿<section class="detail-page">
+  <app-store-header
+    [searchValue]="''"
+    [cartItems]="cartFacade.totalItems()"
+    (searchChange)="onSearch($event)"
+  />
 
   <button type="button" class="back-link" (click)="backToCatalog()">← Voltar para o catálogo</button>
+
+  @if (cartFacade.cartFeedback()) {
+    <div class="state-card" role="status">{{ cartFacade.cartFeedback() }}</div>
+  }
 
   @if (facade.detailLoading()) {
     <div class="state-card" role="status">Carregando produto...</div>
@@ -31,7 +39,9 @@
 
         <p class="price">{{ formatPrice(product.price) }}</p>
 
-        <button type="button" [disabled]="!product.available">Adicionar ao carrinho</button>
+        <button type="button" [disabled]="!product.available" (click)="addToCart()">
+          Adicionar ao carrinho
+        </button>
       </div>
     </article>
   }

@@ -1,5 +1,9 @@
 <section class="catalog-page">
-  <app-store-header [searchValue]="filtersForm.controls.q.value" (searchChange)="onSearch($event)" />
+  <app-store-header
+    [searchValue]="filtersForm.controls.q.value"
+    [cartItems]="cartFacade.totalItems()"
+    (searchChange)="onSearch($event)"
+  />
 
   <form class="filters-panel" [formGroup]="filtersForm" (ngSubmit)="submitFilters()">
     <label>
@@ -28,6 +32,10 @@
     </div>
   </form>
 
+  @if (cartFacade.cartFeedback()) {
+    <div class="state-card" role="status">{{ cartFacade.cartFeedback() }}</div>
+  }
+
   @if (facade.listLoading()) {
     <div class="state-card" role="status">Carregando produtos...</div>
   } @else if (facade.listError()) {
@@ -40,7 +48,7 @@
   } @else {
     <div class="product-grid">
       @for (product of facade.products(); track product.id) {
-        <app-product-card [product]="product" />
+        <app-product-card [product]="product" (addToCart)="addToCart($event)" />
       }
     </div>
   }

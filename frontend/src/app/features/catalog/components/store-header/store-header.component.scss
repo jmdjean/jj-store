@@ -56,12 +56,14 @@
   border-radius: 999px;
   background: #fff;
   color: #3f2d19;
+  text-decoration: none;
   padding: 0.55rem 0.9rem;
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
   font: inherit;
   font-weight: 600;
+  cursor: pointer;
 }
 
 .cart-badge {

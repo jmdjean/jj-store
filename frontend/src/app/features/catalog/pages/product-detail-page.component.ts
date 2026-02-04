@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/cor
 import { ActivatedRoute, Router } from '@angular/router';
 import { StoreHeaderComponent } from '../components/store-header/store-header.component';
 import { CatalogFacade } from '../facade/catalog.facade';
+import { CartFacade } from '../../cart/facade/cart.facade';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -15,6 +16,7 @@ export class ProductDetailPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   protected readonly facade = inject(CatalogFacade);
+  protected readonly cartFacade = inject(CartFacade);
 
   // Loads product details using the route parameter id.
   ngOnInit(): void {
@@ -44,6 +46,17 @@ export class ProductDetailPageComponent implements OnInit {
   // Navigates back to the main catalog page.
   protected backToCatalog(): void {
     void this.router.navigateByUrl('/');
+  }
+
+  // Adds the selected product to cart when stock is available.
+  protected addToCart(): void {
+    const product = this.facade.selectedProduct();
+
+    if (!product) {
+      return;
+    }
+
+    this.cartFacade.addCatalogProduct(product);
   }
 
   // Formats numeric prices using Brazilian currency conventions.

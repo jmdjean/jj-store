@@ -60,13 +60,27 @@
     color: #6f5f4f;
   }
 
+  .actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+
+  button,
   a {
     border-radius: 0.65rem;
+    border: none;
     background: #1f8f66;
     color: #fff;
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: 600;
     padding: 0.45rem 0.75rem;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
   }
 }

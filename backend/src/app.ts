@@ -5,6 +5,7 @@ import { authRouter } from './routes/auth.routes.js';
 import { adminRouter } from './routes/admin.routes.js';
 import { meRouter } from './routes/me.routes.js';
 import { productsRouter } from './routes/products.routes.js';
+import { cartRouter } from './routes/cart.routes.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 
 export function createApp() {
@@ -18,6 +19,7 @@ export function createApp() {
   app.use(adminRouter);
   app.use(meRouter);
   app.use(productsRouter);
+  app.use(cartRouter);
 
   app.use(errorMiddleware);
 
