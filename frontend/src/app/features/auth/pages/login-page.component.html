@@ -1,0 +1,40 @@
+<section class="login-page" aria-labelledby="titulo-login">
+  <header>
+    <h2 id="titulo-login">Entrar na JJ Store</h2>
+    <p>Use seu usuário ou e-mail para acessar sua conta.</p>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <label for="identificador">Usuário ou e-mail</label>
+    <input
+      id="identificador"
+      type="text"
+      formControlName="identificador"
+      placeholder="Digite seu usuário ou e-mail"
+      autocomplete="username"
+    />
+    @if (identificadorInvalido) {
+      <p class="erro">Informe um usuário ou e-mail válido.</p>
+    }
+
+    <label for="senha">Senha</label>
+    <input
+      id="senha"
+      type="password"
+      formControlName="senha"
+      placeholder="Digite sua senha"
+      autocomplete="current-password"
+    />
+    @if (senhaInvalida) {
+      <p class="erro">A senha deve ter ao menos 6 caracteres.</p>
+    }
+
+    @if (mensagemErro()) {
+      <p class="erro destaque" role="alert">{{ mensagemErro() }}</p>
+    }
+
+    <button type="submit" [disabled]="carregando()">
+      {{ carregando() ? 'Entrando...' : 'Entrar' }}
+    </button>
+  </form>
+</section>

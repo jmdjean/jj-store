@@ -1,16 +1,32 @@
-<section class="hero" aria-labelledby="titulo-principal">
-  <h1 id="titulo-principal">JJ Store</h1>
+﻿<section class="hero" aria-labelledby="titulo-principal">
+  <h2 id="titulo-principal">JJ Store</h2>
   <p class="lead">Base do projeto pronta para evoluir as próximas etapas.</p>
 </section>
 
 <section class="feedback" aria-label="Mensagens do sistema">
   <article class="card success" role="status" aria-live="polite">
-    <h2>Sucesso</h2>
+    <h3>Sucesso</h3>
     <p>{{ successMessage() }}</p>
   </article>
 
   <article class="card error" role="alert">
-    <h2>Erro (placeholder)</h2>
+    <h3>Erro (placeholder)</h3>
     <p>{{ errorMessage() }}</p>
   </article>
+</section>
+
+<section class="auth-card" aria-label="Autenticação">
+  @if (!authService.autenticado()) {
+    <p>Você ainda não está autenticado.</p>
+    <a routerLink="/login">Ir para login</a>
+  } @else {
+    <p>
+      Logado como <strong>{{ authService.usuario()?.nomeExibicao }}</strong>
+      ({{ authService.role() }}).
+    </p>
+    <div class="actions">
+      <a routerLink="/admin">Acessar área admin</a>
+      <button type="button" (click)="logout()">Sair</button>
+    </div>
+  }
 </section>

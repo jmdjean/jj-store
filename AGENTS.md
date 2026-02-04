@@ -38,8 +38,13 @@ Main flows:
 - Backend: response `mensagem`, validation messages, and failure responses
 - Standard error example:
 ```json
-{ "mensagem": "Nao foi possivel concluir a operacao.", "detalhes": { "campo": "..." } }
+{ "mensagem": "Não foi possível concluir a operação.", "detalhes": { "campo": "..." } }
 ```
+
+### 2.3 Encoding and accents (required)
+- All user-facing text must be written in proper pt-BR with accents (UTF-8), for example: `não`, `você`, `usuário`, `operação`.
+- Do not use ASCII fallback in user text (for example: `nao`, `voce`, `usuario`, `operacao`).
+- Do not use Unicode escape sequences in user text (for example: `\u00EA`, `\u00E3`); write the actual characters.
 
 ---
 
@@ -67,6 +72,7 @@ Main flows:
 - Avoid `any` (prefer `unknown` + refinement)
 - Run lint before finishing a delivery
 - Deliver in small stages with clear commits
+- Before finalizing, validate user-facing text for proper accents (pt-BR) and ensure there are no ASCII fallbacks (`nao`, `voce`, `usuario`) or Unicode escapes (`\u00XX`).
 
 ---
 
@@ -152,6 +158,7 @@ Example stages:
 
 The agent must route work to these skills:
 
+- Never use `moai-domain-frontend` in this repository.
 - Any frontend code request: always use `angular21-enterprise.skill.md`.
 - Frontend UX/UI quality: always apply `05-skill-ux-ui-professional.md` together with `angular21-enterprise.skill.md`.
 - Any Node.js backend code request: always use `node-ecommerce-nestjs.skill.md`.

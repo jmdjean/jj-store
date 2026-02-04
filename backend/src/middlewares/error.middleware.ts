@@ -1,11 +1,11 @@
-import type { NextFunction, Request, Response } from 'express';
+﻿import type { NextFunction, Request, Response } from 'express';
+import { AppError } from '../common/app-error.js';
 
 export type ApiErrorResponse = {
   mensagem: string;
-  detalhes?: Record<string, unknown>;
+  detalhes?: unknown;
 };
 
-// Normalizes server errors to the required pt-BR response shape.
 export function errorMiddleware(
   error: unknown,
   _request: Request,
@@ -13,6 +13,27 @@ export function errorMiddleware(
   next: NextFunction,
 ): void {
   void next;
+
+  if (error instanceof AppError) {
+    const payload: ApiErrorResponse = {
+      mensagem: error.mensagem,
+    };
+
+    if (error.detalhes !== undefined) {
+      payload.detalhes = error.detalhes;
+    }
+
+    response.status(error.statusCode).json(payload);
+    return;
+  }
+
+  if (error instanceof SyntaxError) {
+    response.status(400).json({
+      mensagem: 'Corpo da requisição inválido.',
+    });
+    return;
+  }
+
   console.error(error);
 
   response.status(500).json({
