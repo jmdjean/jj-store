@@ -1,0 +1,22 @@
+<article class="product-card">
+  <img
+    class="product-image"
+    [src]="product.imageUrl || 'https://placehold.co/600x400/f8efe5/8e6e4f?text=Sem+Imagem'"
+    [alt]="product.name"
+    loading="lazy"
+  />
+
+  <div class="content">
+    <span class="category">{{ product.category }}</span>
+    <h3>{{ product.name }}</h3>
+    <p>{{ product.description }}</p>
+  </div>
+
+  <footer class="footer">
+    <div>
+      <strong>{{ formatPrice(product.price) }}</strong>
+      <small>{{ product.available ? 'Disponível' : 'Indisponível' }}</small>
+    </div>
+    <a [routerLink]="['/produtos', product.id]">Ver detalhes</a>
+  </footer>
+</article>

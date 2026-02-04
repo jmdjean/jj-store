@@ -1,53 +1,61 @@
-# Etapa 05 — Minhas compras + Cancelamento (<= 3 dias e não entregue)
+# Stage 05 - My Orders + Cancellation (<= 3 days and not delivered)
 
-# Convenções gerais (aplicáveis a todas as etapas)
+# Global conventions (applies to all stages)
 
-> **Padrão de idioma (obrigatório):** toda a linguagem do sistema deve ser **Português (Brasil) – pt-BR**,
-> incluindo: mensagens de erro/sucesso, validações, respostas da API, textos de UI, labels, placeholders,
-> logs voltados ao usuário (quando aplicável) e documentação de telas.
+> **Language standard (mandatory):** all user-facing system language must be **Portuguese (Brazil) - pt-BR**,
+> including: success/error messages, validations, API responses, UI labels/placeholders,
+> user-facing logs (when applicable), and screen documentation.
 
-## Regras de entrega
-- Implementar **somente** o escopo desta etapa.
-- Manter a arquitetura em camadas no backend (routes/controllers → services → repositories).
-- No frontend (Angular 21), manter áreas/módulos e **guards** por autenticação e role.
-- Garantir **build/test** passando (quando existir).
-- Ao finalizar, realizar **1 commit** com mensagem clara (pt-BR ou padrão conventional commits).
+## Delivery rules
+- Implement **only** this stage scope.
+- Keep backend layered architecture (routes/controllers -> services -> repositories).
+- In frontend (Angular 21), keep areas/modules and **guards** by auth and role.
+- Ensure **build/tests** pass (when available).
+- At the end, create **1 commit** with a clear message.
 
-## Definições de roles
+## Role definitions
 - `ADMIN`
 - `MANAGER`
 - `CUSTOMER`
 
-## Padrão de status do pedido (v1)
+## Order status standard (v1)
 - `CREATED`, `PAID`, `PICKING`, `SHIPPED`, `DELIVERED`, `CANCELED`
 
+## Data guideline (mandatory for all stages)
+- Use **one single Supabase PostgreSQL database** (IPv4-compatible via Supabase pooler/connection string).
+- The same database contains two logical layers:
+  - relational (registrations and transactions)
+  - vector for RAG (pgvector)
+- Every order change (including cancellation) must also update Markdown + vector record.
 
-## Objetivo
-Customer visualiza pedidos e pode cancelar quando permitido.
+## Objective
+Allow customer to view own orders and cancel when allowed.
 
-## Checklist de tarefas
+## Task checklist
 ### Backend
 - [ ] `GET /me/orders` (CUSTOMER):
-  - listagem paginada e ordenada por data
-- [ ] `GET /me/orders/:id` (CUSTOMER) (opcional)
+  - paginated list sorted by date
+- [ ] `GET /me/orders/:id` (CUSTOMER) (optional)
 - [ ] `POST /me/orders/:id/cancel` (CUSTOMER):
-  - permitir se `status != DELIVERED` e `created_at` <= 3 dias
-  - mudar status para `CANCELED`
-  - devolver estoque (transação)
-  - registrar auditoria
-  - mensagens pt-BR
+  - allow if `status != DELIVERED` and `created_at` <= 3 days
+  - set status to `CANCELED`
+  - return stock (transaction)
+  - register audit
+  - after relational success: regenerate order Markdown and update vector embedding
+  - pt-BR messages
 
 ### Frontend
-- [ ] Tela `/minhas-compras`:
-  - listar pedidos com status (badge)
-  - botão “Cancelar” apenas quando permitido
-- [ ] Tela de detalhes (opcional v1) para itens do pedido.
-- [ ] Mensagens pt-BR (ex.: “Pedido cancelado com sucesso”, “Prazo de cancelamento expirado”).
+- [ ] `/minhas-compras` screen:
+  - list orders with status badges
+  - show "Cancelar" only when allowed
+- [ ] Details screen (optional v1) for order items.
+- [ ] pt-BR messages (example: "Pedido cancelado com sucesso", "Prazo de cancelamento expirado").
 
-## Critérios de aceite
-- [ ] Regras de cancelamento respeitadas.
-- [ ] Estoque devolvido em cancelamento.
-- [ ] UI mostra status e permite cancelar quando aplicável.
+## Acceptance criteria
+- [ ] Cancellation rules are enforced.
+- [ ] Stock is returned on cancellation.
+- [ ] Cancellation also syncs Markdown + vector in Supabase.
+- [ ] UI shows statuses and allows valid cancellation.
 
-## Commit sugerido
-- `feat(minhas-compras): listagem e cancelamento com regra de 3 dias (pt-BR)`
+## Suggested commit
+- `feat(my-orders): listing and cancellation with 3-day rule (pt-BR)`

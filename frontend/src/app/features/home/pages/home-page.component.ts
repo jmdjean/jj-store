@@ -15,6 +15,7 @@ export class HomePageComponent {
   protected readonly successMessage = signal('Ambiente inicial carregado com sucesso.');
   protected readonly errorMessage = signal('Não foi possível carregar os dados. Tente novamente.');
 
+  // Ends the current authenticated session.
   protected logout(): void {
     this.authService.logout();
   }

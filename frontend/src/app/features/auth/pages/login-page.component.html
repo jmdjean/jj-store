@@ -36,5 +36,10 @@
     <button type="submit" [disabled]="carregando()">
       {{ carregando() ? 'Entrando...' : 'Entrar' }}
     </button>
+
+    <p class="cadastro-link">
+      Ainda não tem conta?
+      <a routerLink="/cadastro">Cadastre-se</a>
+    </p>
   </form>
 </section>

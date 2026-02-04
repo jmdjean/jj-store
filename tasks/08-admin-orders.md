@@ -1,51 +1,59 @@
-# Etapa 08 — Admin/Manager: Controle de Vendas/Pedidos (workflow de status)
+# Stage 08 - Admin/Manager: Sales/Orders Control (status workflow)
 
-# Convenções gerais (aplicáveis a todas as etapas)
+# Global conventions (applies to all stages)
 
-> **Padrão de idioma (obrigatório):** toda a linguagem do sistema deve ser **Português (Brasil) – pt-BR**,
-> incluindo: mensagens de erro/sucesso, validações, respostas da API, textos de UI, labels, placeholders,
-> logs voltados ao usuário (quando aplicável) e documentação de telas.
+> **Language standard (mandatory):** all user-facing system language must be **Portuguese (Brazil) - pt-BR**,
+> including: success/error messages, validations, API responses, UI labels/placeholders,
+> user-facing logs (when applicable), and screen documentation.
 
-## Regras de entrega
-- Implementar **somente** o escopo desta etapa.
-- Manter a arquitetura em camadas no backend (routes/controllers → services → repositories).
-- No frontend (Angular 21), manter áreas/módulos e **guards** por autenticação e role.
-- Garantir **build/test** passando (quando existir).
-- Ao finalizar, realizar **1 commit** com mensagem clara (pt-BR ou padrão conventional commits).
+## Delivery rules
+- Implement **only** this stage scope.
+- Keep backend layered architecture (routes/controllers -> services -> repositories).
+- In frontend (Angular 21), keep areas/modules and **guards** by auth and role.
+- Ensure **build/tests** pass (when available).
+- At the end, create **1 commit** with a clear message.
 
-## Definições de roles
+## Role definitions
 - `ADMIN`
 - `MANAGER`
 - `CUSTOMER`
 
-## Padrão de status do pedido (v1)
+## Order status standard (v1)
 - `CREATED`, `PAID`, `PICKING`, `SHIPPED`, `DELIVERED`, `CANCELED`
 
+## Data guideline (mandatory for all stages)
+- Use **one single Supabase PostgreSQL database** (IPv4-compatible via Supabase pooler/connection string).
+- The same database contains two logical layers:
+  - relational (registrations and transactions)
+  - vector for RAG (pgvector)
+- Any order status update must also update matching Markdown + vector record.
 
-## Objetivo
-Permitir que ADMIN/MANAGER gerenciem pedidos e status de entrega.
+## Objective
+Allow ADMIN/MANAGER to manage orders and delivery statuses.
 
-## Checklist de tarefas
+## Task checklist
 ### Backend
 - [ ] `GET /admin/orders` (ADMIN/MANAGER):
-  - filtros por status, data, customer
+  - filters by status, date, customer
 - [ ] `PUT /admin/orders/:id/status` (ADMIN/MANAGER):
-  - validar transições de status (definir regras simples v1)
-  - registrar auditoria
-  - mensagens pt-BR
-- [ ] Garantir que `DELIVERED` bloqueia cancelamento do customer.
+  - validate status transitions (simple v1 rules)
+  - register audit
+  - after relational success: regenerate order Markdown and update vector
+  - pt-BR messages
+- [ ] Ensure `DELIVERED` blocks customer cancellation.
 
 ### Frontend
-- [ ] Tela “Pedidos” (admin/manager):
-  - listagem com filtros e busca
-  - detalhes do pedido (itens, endereço snapshot)
-  - alterar status via dropdown + salvar
-- [ ] Feedback pt-BR.
+- [ ] "Pedidos" screen (admin/manager):
+  - listing with filters and search
+  - order details (items, address snapshot)
+  - update status via dropdown + save
+- [ ] pt-BR feedback.
 
-## Critérios de aceite
-- [ ] Admin/Manager lista e atualiza pedidos.
-- [ ] Auditoria criada para mudanças.
-- [ ] Customer não consegue cancelar entregue.
+## Acceptance criteria
+- [ ] Admin/Manager can list and update orders.
+- [ ] Audit is created for changes.
+- [ ] Status updates sync relational + vector in Supabase.
+- [ ] Customer cannot cancel delivered order.
 
-## Commit sugerido
-- `feat(admin-pedidos): gestão de pedidos e status (pt-BR)`
+## Suggested commit
+- `feat(admin-orders): order and status management (pt-BR)`

@@ -1,57 +1,64 @@
-# Etapa 03 — Catálogo público + Detalhe do Produto
+# Stage 03 - Public Catalog + Product Detail
 
-# Convenções gerais (aplicáveis a todas as etapas)
+# Global conventions (applies to all stages)
 
-> **Padrão de idioma (obrigatório):** toda a linguagem do sistema deve ser **Português (Brasil) – pt-BR**,
-> incluindo: mensagens de erro/sucesso, validações, respostas da API, textos de UI, labels, placeholders,
-> logs voltados ao usuário (quando aplicável) e documentação de telas.
+> **Language standard (mandatory):** all user-facing system language must be **Portuguese (Brazil) - pt-BR**,
+> including: success/error messages, validations, API responses, UI labels/placeholders,
+> user-facing logs (when applicable), and screen documentation.
 
-## Regras de entrega
-- Implementar **somente** o escopo desta etapa.
-- Manter a arquitetura em camadas no backend (routes/controllers → services → repositories).
-- No frontend (Angular 21), manter áreas/módulos e **guards** por autenticação e role.
-- Garantir **build/test** passando (quando existir).
-- Ao finalizar, realizar **1 commit** com mensagem clara (pt-BR ou padrão conventional commits).
+## Delivery rules
+- Implement **only** this stage scope.
+- Keep backend layered architecture (routes/controllers -> services -> repositories).
+- In frontend (Angular 21), keep areas/modules and **guards** by auth and role.
+- Ensure **build/tests** pass (when available).
+- At the end, create **1 commit** with a clear message.
 
-## Definições de roles
+## Role definitions
 - `ADMIN`
 - `MANAGER`
 - `CUSTOMER`
 
-## Padrão de status do pedido (v1)
+## Order status standard (v1)
 - `CREATED`, `PAID`, `PICKING`, `SHIPPED`, `DELIVERED`, `CANCELED`
 
+## Data guideline (mandatory for all stages)
+- Use **one single Supabase PostgreSQL database** (IPv4-compatible via Supabase pooler/connection string).
+- The same database contains two logical layers:
+  - relational (registrations and transactions)
+  - vector for RAG (pgvector)
+- In this stage (public catalog), no new registration flow is created. Vector indexing is fed by admin create/update flows.
 
-## Objetivo
-Exibir listagem pública de produtos e página de detalhes.
+## Objective
+Display public product listing and product details page.
 
-## Checklist de tarefas
-### Banco/Seed
-- [ ] Criar tabelas `products` e `inventory` (se ainda não existirem).
-- [ ] Seed com alguns produtos para desenvolvimento.
+## Task checklist
+### Database/Seed
+- [ ] Create `products` and `inventory` tables (if missing).
+- [ ] Add seed data for development.
+- [ ] Ensure `products`/`inventory` live in the same Supabase PostgreSQL used by RAG.
 
 ### Backend
 - [ ] `GET /products` (public):
-  - filtros: `q` (texto), `category`, `minPrice`, `maxPrice`
-  - paginação: `page`, `pageSize`
+  - filters: `q` (text), `category`, `minPrice`, `maxPrice`
+  - pagination: `page`, `pageSize`
 - [ ] `GET /products/:id` (public)
-- [ ] Respostas pt-BR quando necessário (ex.: “Produto não encontrado”).
+- [ ] Keep responses in pt-BR when needed (example: "Produto nao encontrado").
 
-### Frontend (UI profissional)
-- [ ] Página de catálogo:
-  - cards de produto (imagem, nome, preço, categoria)
-  - busca e filtros
-  - responsivo
-- [ ] Página de detalhes:
-  - imagem (se houver)
-  - descrição, peso, preço, disponibilidade
-  - botão “Adicionar ao carrinho”
-- [ ] Mensagens pt-BR (ex.: “Sem resultados”).
+### Frontend (professional UI)
+- [ ] Catalog page:
+  - product cards (image, name, price, category)
+  - search and filters
+  - responsive layout
+- [ ] Product detail page:
+  - image (if available)
+  - description, weight, price, availability
+  - "Adicionar ao carrinho" button
+- [ ] pt-BR messages (example: "Sem resultados").
 
-## Critérios de aceite
-- [ ] Catálogo lista produtos e aplica filtros.
-- [ ] Detalhe abre corretamente.
-- [ ] UI com aparência de loja (header com busca e carrinho).
+## Acceptance criteria
+- [ ] Catalog lists products and applies filters.
+- [ ] Detail page opens correctly.
+- [ ] UI has store-like structure (header with search and cart).
 
-## Commit sugerido
-- `feat(catalogo): listagem pública e detalhes de produto (pt-BR)`
+## Suggested commit
+- `feat(catalog): public listing and product details (pt-BR)`

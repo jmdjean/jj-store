@@ -1,57 +1,69 @@
-# Etapa 04 — Carrinho + Checkout (criação de pedido e baixa de estoque)
+# Stage 04 - Cart + Checkout (order creation and stock decrease)
 
-# Convenções gerais (aplicáveis a todas as etapas)
+# Global conventions (applies to all stages)
 
-> **Padrão de idioma (obrigatório):** toda a linguagem do sistema deve ser **Português (Brasil) – pt-BR**,
-> incluindo: mensagens de erro/sucesso, validações, respostas da API, textos de UI, labels, placeholders,
-> logs voltados ao usuário (quando aplicável) e documentação de telas.
+> **Language standard (mandatory):** all user-facing system language must be **Portuguese (Brazil) - pt-BR**,
+> including: success/error messages, validations, API responses, UI labels/placeholders,
+> user-facing logs (when applicable), and screen documentation.
 
-## Regras de entrega
-- Implementar **somente** o escopo desta etapa.
-- Manter a arquitetura em camadas no backend (routes/controllers → services → repositories).
-- No frontend (Angular 21), manter áreas/módulos e **guards** por autenticação e role.
-- Garantir **build/test** passando (quando existir).
-- Ao finalizar, realizar **1 commit** com mensagem clara (pt-BR ou padrão conventional commits).
+## Delivery rules
+- Implement **only** this stage scope.
+- Keep backend layered architecture (routes/controllers -> services -> repositories).
+- In frontend (Angular 21), keep areas/modules and **guards** by auth and role.
+- Ensure **build/tests** pass (when available).
+- At the end, create **1 commit** with a clear message.
 
-## Definições de roles
+## Role definitions
 - `ADMIN`
 - `MANAGER`
 - `CUSTOMER`
 
-## Padrão de status do pedido (v1)
+## Order status standard (v1)
 - `CREATED`, `PAID`, `PICKING`, `SHIPPED`, `DELIVERED`, `CANCELED`
 
+## Data guideline (mandatory for all stages)
+- Use **one single Supabase PostgreSQL database** (IPv4-compatible via Supabase pooler/connection string).
+- The same database contains two logical layers:
+  - relational (registrations and transactions)
+  - vector for RAG (pgvector)
+- Mandatory sync rule for **every create/update**:
+  1) persist relational data successfully;
+  2) generate canonical `.md` entity document;
+  3) generate embedding and upsert vector record.
 
-## Objetivo
-Implementar carrinho no frontend e checkout no backend (sem gateway de pagamento na v1).
+## Objective
+Implement frontend cart and backend checkout (no payment gateway in v1).
 
-## Checklist de tarefas
+## Task checklist
 ### Frontend
-- [ ] `CartService` com persistência (localStorage).
-- [ ] Tela `/carrinho`:
-  - listar itens, alterar quantidade, remover
+- [ ] `CartService` with localStorage persistence.
+- [ ] `/carrinho` screen:
+  - list items, change quantity, remove item
   - subtotal
-- [ ] Tela `/checkout`:
-  - exigir login (redirecionar para login e voltar)
-  - confirmar endereço (do perfil) e finalizar compra
-- [ ] Mensagens pt-BR (ex.: “Quantidade indisponível em estoque”).
+- [ ] `/checkout` screen:
+  - require login (redirect to login and return)
+  - confirm profile address and finalize purchase
+- [ ] pt-BR messages (example: "Quantidade indisponivel em estoque").
 
 ### Backend
-- [ ] Criar tabelas `orders` e `order_items`.
+- [ ] Create `orders` and `order_items` tables.
+- [ ] Create vector table for order documents (`rag_documents` or equivalent) in same Supabase database.
 - [ ] `POST /cart/checkout` (CUSTOMER):
-  - entrada: itens `{ productId, quantity }` + endereço (opcional; usar snapshot do perfil)
-  - valida estoque e preços
-  - cria pedido + itens
-  - baixa estoque (transação)
-  - retorna confirmação pt-BR com `orderId`
-- [ ] Erros pt-BR:
-  - “Estoque insuficiente para o produto X”
-  - “Produto não encontrado”
+  - input: items `{ productId, quantity }` + address (optional; default from profile snapshot)
+  - validate stock and prices
+  - create order + items
+  - decrease stock (transaction)
+  - after relational success: generate order Markdown + item details and save embedding in vector table
+  - return pt-BR confirmation with `orderId`
+- [ ] pt-BR error cases:
+  - "Estoque insuficiente para o produto X"
+  - "Produto nao encontrado"
 
-## Critérios de aceite
-- [ ] Checkout cria pedido e atualiza estoque corretamente.
-- [ ] Carrinho funciona e persiste.
-- [ ] Erros/sucesso em pt-BR.
+## Acceptance criteria
+- [ ] Checkout creates order and updates stock correctly.
+- [ ] Created order also generates Markdown document and vector record in Supabase.
+- [ ] Cart works and persists.
+- [ ] Success/errors are in pt-BR.
 
-## Commit sugerido
-- `feat(pedidos): carrinho e checkout com baixa de estoque (pt-BR)`
+## Suggested commit
+- `feat(orders): cart and checkout with stock decrease (pt-BR)`

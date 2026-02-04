@@ -29,6 +29,7 @@ CRITICAL LANGUAGE RULES (NON‑NEGOTIABLE)
 UI text visible to users → MUST be pt-BR
 Code identifiers → MUST be English
 Method comments → MUST be English (max 2 lines)
+All created methods → MUST include a comment (max 2 lines, in English)
 
 Examples:
 
@@ -41,7 +42,7 @@ loadCustomers()
 isLoading
 customer-list.page.ts
 
-Method comment rule:
+Method comment rule (applies to every created method):
 
 // Loads customers from API and updates state.
 loadCustomers(): void {}
@@ -314,7 +315,7 @@ Before finishing any code generation:
 
 [ ] UI text is pt-BR
 [ ] Code identifiers English
-[ ] Method comments included
+[ ] Every created method has an English comment (max 2 lines)
 [ ] Standalone APIs
 [ ] Facade used
 [ ] Signals used

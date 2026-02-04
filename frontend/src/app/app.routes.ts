@@ -8,6 +8,20 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/routes').then((module) => module.AUTH_ROUTES),
   },
   {
+    path: 'cadastro',
+    loadChildren: () =>
+      import('./features/customer/routes').then((module) => module.CUSTOMER_SIGNUP_ROUTES),
+  },
+  {
+    path: 'minha-conta',
+    canActivate: [authGuard, roleGuard],
+    data: {
+      roles: ['CUSTOMER'],
+    },
+    loadChildren: () =>
+      import('./features/customer/routes').then((module) => module.CUSTOMER_ACCOUNT_ROUTES),
+  },
+  {
     path: 'admin',
     canActivate: [authGuard, roleGuard],
     data: {
@@ -17,7 +31,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    loadChildren: () => import('./features/home/routes').then((module) => module.HOME_ROUTES),
+    loadChildren: () => import('./features/catalog/routes').then((module) => module.CATALOG_ROUTES),
   },
   {
     path: '**',

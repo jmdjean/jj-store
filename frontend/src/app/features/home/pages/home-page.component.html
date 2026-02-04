@@ -18,13 +18,19 @@
 <section class="auth-card" aria-label="Autenticação">
   @if (!authService.autenticado()) {
     <p>Você ainda não está autenticado.</p>
-    <a routerLink="/login">Ir para login</a>
+    <div class="actions">
+      <a routerLink="/login">Ir para login</a>
+      <a routerLink="/cadastro">Criar cadastro</a>
+    </div>
   } @else {
     <p>
       Logado como <strong>{{ authService.usuario()?.nomeExibicao }}</strong>
       ({{ authService.role() }}).
     </p>
     <div class="actions">
+      @if (authService.role() === 'CUSTOMER') {
+        <a routerLink="/minha-conta/perfil">Minha conta</a>
+      }
       <a routerLink="/admin">Acessar área admin</a>
       <button type="button" (click)="logout()">Sair</button>
     </div>

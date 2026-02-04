@@ -18,11 +18,16 @@ Anything returned to clients intended to be read by end users must be **pt-BR**:
 All identifiers in code must be English:
 - folders, files, classes, functions, variables, DTOs, enums, route paths, database table/column names
 
-### 1.3 Method comments (English, max 2 lines)
-Every method/function must have an English comment above it, max 2 lines:
+### 1.3 Method comments (English, max 2 lines) — **MANDATORY**
+**Every method/function created must have an English comment above it, max 2 lines.**
+Comment must describe what the method does concisely:
 ```ts
 // Creates a new order from the user's cart and persists it atomically.
 async createOrder(...) { ... }
+
+// Validates coupon eligibility and calculates discount amount.
+// Returns null if coupon is invalid or expired.
+validateCoupon(code: string): Discount | null { ... }
 ```
 
 ---
@@ -350,9 +355,28 @@ Never generate only a single route without tests and error handling.
 
 ---
 
-## 14) Method Comment Requirement (Reminder)
-Every method must include an English comment max 2 lines.
-No exceptions.
+## 14) Method Comment Requirement (CRITICAL — Non-Negotiable)
+**EVERY method/function created MUST have an English comment above it, max 2 lines. NO EXCEPTIONS.**
+
+The comment must:
+- Be in English (not pt-BR)
+- Be placed immediately above the method signature
+- Describe what the method does in **max 2 lines**
+- Use clear, action-oriented language (e.g., "Creates", "Validates", "Calculates", "Returns")
+- Optionally mention what it returns or side effects if relevant
+
+Examples:
+```ts
+// Hashes a plaintext password using Argon2 and returns the hash.
+async hashPassword(password: string): Promise<string> { ... }
+
+// Retrieves a product by ID and applies role-based filters.
+async getProductById(id: string, userRole: UserRole): Promise<Product> { ... }
+
+// Validates that inventory is sufficient and locks stock atomically.
+// Throws OutOfStockException if quantity unavailable.
+async reserveInventory(productId: string, quantity: number): Promise<Reservation> { ... }
+```
 
 ---
 

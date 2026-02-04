@@ -1,0 +1,55 @@
+<section class="catalog-page">
+  <app-store-header [searchValue]="filtersForm.controls.q.value" (searchChange)="onSearch($event)" />
+
+  <form class="filters-panel" [formGroup]="filtersForm" (ngSubmit)="submitFilters()">
+    <label>
+      Categoria
+      <select formControlName="category">
+        <option value="">Todas</option>
+        @for (category of categoryOptions; track category) {
+          <option [value]="category">{{ category }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Preço mínimo (R$)
+      <input type="number" step="0.01" min="0" formControlName="minPrice" placeholder="0,00" />
+    </label>
+
+    <label>
+      Preço máximo (R$)
+      <input type="number" step="0.01" min="0" formControlName="maxPrice" placeholder="0,00" />
+    </label>
+
+    <div class="filters-actions">
+      <button type="submit">Aplicar filtros</button>
+      <button type="button" class="ghost" (click)="clearFilters()">Limpar</button>
+    </div>
+  </form>
+
+  @if (facade.listLoading()) {
+    <div class="state-card" role="status">Carregando produtos...</div>
+  } @else if (facade.listError()) {
+    <div class="state-card state-card--error" role="alert">
+      <p>{{ facade.listError() }}</p>
+      <button type="button" (click)="submitFilters()">Tentar novamente</button>
+    </div>
+  } @else if (facade.products().length === 0) {
+    <div class="state-card">Sem resultados para sua busca.</div>
+  } @else {
+    <div class="product-grid">
+      @for (product of facade.products(); track product.id) {
+        <app-product-card [product]="product" />
+      }
+    </div>
+  }
+
+  @if (facade.meta().totalPages > 1) {
+    <nav class="pagination" aria-label="Paginação">
+      <button type="button" (click)="goToPage(facade.meta().page - 1)">Anterior</button>
+      <span>Página {{ facade.meta().page }} de {{ facade.meta().totalPages }}</span>
+      <button type="button" (click)="goToPage(facade.meta().page + 1)">Próxima</button>
+    </nav>
+  }
+</section>

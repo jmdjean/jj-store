@@ -1,0 +1,38 @@
+<section class="detail-page">
+  <app-store-header [searchValue]="''" (searchChange)="onSearch($event)" />
+
+  <button type="button" class="back-link" (click)="backToCatalog()">← Voltar para o catálogo</button>
+
+  @if (facade.detailLoading()) {
+    <div class="state-card" role="status">Carregando produto...</div>
+  } @else if (facade.detailError()) {
+    <div class="state-card state-card--error" role="alert">
+      {{ facade.detailError() }}
+    </div>
+  } @else if (facade.selectedProduct(); as product) {
+    <article class="product-layout">
+      <img
+        [src]="product.imageUrl || 'https://placehold.co/900x700/f8efe5/8e6e4f?text=Sem+Imagem'"
+        [alt]="product.name"
+      />
+
+      <div class="content">
+        <span class="category">{{ product.category }}</span>
+        <h1>{{ product.name }}</h1>
+        <p>{{ product.description }}</p>
+
+        <ul>
+          <li><strong>Peso:</strong> {{ product.weightGrams ?? 0 }} g</li>
+          <li>
+            <strong>Disponibilidade:</strong>
+            {{ product.available ? product.stockQuantity + ' em estoque' : 'Indisponível no momento' }}
+          </li>
+        </ul>
+
+        <p class="price">{{ formatPrice(product.price) }}</p>
+
+        <button type="button" [disabled]="!product.available">Adicionar ao carrinho</button>
+      </div>
+    </article>
+  }
+</section>

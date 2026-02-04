@@ -1,0 +1,87 @@
+<section class="register-page" aria-labelledby="register-title">
+  <header class="page-header">
+    <p class="eyebrow">Conta do cliente</p>
+    <h2 id="register-title">Criar cadastro</h2>
+    <p>Preencha seus dados para concluir o cadastro na JJ Store.</p>
+  </header>
+
+  @if (facade.registerMessage()) {
+    <p class="toast success" role="status">{{ facade.registerMessage() }}</p>
+  }
+
+  @if (facade.registerError()) {
+    <p class="toast error" role="alert">{{ facade.registerError() }}</p>
+  }
+
+  <form [formGroup]="registerForm" (ngSubmit)="submit()" novalidate>
+    <div class="grid">
+      <label>
+        Nome completo
+        <input type="text" formControlName="fullName" placeholder="Digite seu nome completo" />
+      </label>
+      <label>
+        CPF (somente números)
+        <input type="text" formControlName="cpf" placeholder="00000000000" maxlength="11" />
+      </label>
+      <label>
+        Data de nascimento
+        <input type="date" formControlName="birthDate" />
+      </label>
+      <label>
+        E-mail
+        <input type="email" formControlName="email" placeholder="voce@exemplo.com" autocomplete="email" />
+      </label>
+      <label>
+        Telefone
+        <input type="text" formControlName="phone" placeholder="11999998888" maxlength="11" />
+      </label>
+      <label>
+        Senha
+        <input type="password" formControlName="password" placeholder="Mínimo 6 caracteres" />
+      </label>
+      <label>
+        Rua
+        <input type="text" formControlName="street" placeholder="Rua e avenida" />
+      </label>
+      <label>
+        Número
+        <input type="text" formControlName="streetNumber" placeholder="123" />
+      </label>
+      <label>
+        Bairro
+        <input type="text" formControlName="neighborhood" placeholder="Seu bairro" />
+      </label>
+      <label>
+        Cidade
+        <input type="text" formControlName="city" placeholder="Sua cidade" />
+      </label>
+      <label>
+        UF
+        <input type="text" formControlName="state" placeholder="SP" maxlength="2" />
+      </label>
+      <label>
+        CEP (somente números)
+        <input type="text" formControlName="postalCode" placeholder="00000000" maxlength="8" />
+      </label>
+      <label class="full-row">
+        Complemento
+        <input type="text" formControlName="complement" placeholder="Apartamento, bloco, referência" />
+      </label>
+    </div>
+
+    @if (hasError('fullName') || hasError('cpf') || hasError('birthDate') || hasError('email') || hasError('password')) {
+      <p class="field-error">Revise os dados pessoais e os campos obrigatórios.</p>
+    }
+
+    @if (hasError('street') || hasError('streetNumber') || hasError('neighborhood') || hasError('city') || hasError('state') || hasError('postalCode')) {
+      <p class="field-error">Revise os dados de endereço para continuar.</p>
+    }
+
+    <div class="actions">
+      <button type="submit" [disabled]="facade.registerLoading()">
+        {{ facade.registerLoading() ? 'Salvando cadastro...' : 'Concluir cadastro' }}
+      </button>
+      <a routerLink="/login">Já tenho conta</a>
+    </div>
+  </form>
+</section>

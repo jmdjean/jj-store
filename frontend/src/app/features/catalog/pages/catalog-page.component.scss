@@ -1,0 +1,123 @@
+.catalog-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.filters-panel {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid #eadcc9;
+  border-radius: 1rem;
+  background: #fffaf3;
+  padding: 1rem;
+
+  label {
+    display: grid;
+    gap: 0.35rem;
+    color: #62462a;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  select,
+  input {
+    width: 100%;
+    border: 1px solid #d9c2a4;
+    border-radius: 0.7rem;
+    padding: 0.55rem 0.7rem;
+    font: inherit;
+    color: #2f2214;
+    background: #fff;
+  }
+}
+
+.filters-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+
+  button {
+    border: none;
+    border-radius: 0.7rem;
+    background: #b55f1f;
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    padding: 0.55rem 0.8rem;
+    cursor: pointer;
+  }
+
+  .ghost {
+    background: #fff;
+    border: 1px solid #c9a983;
+    color: #6c4f30;
+  }
+}
+
+.state-card {
+  border-radius: 0.95rem;
+  border: 1px solid #e7d7bf;
+  background: #fff;
+  padding: 1rem;
+  text-align: center;
+  color: #5c452d;
+
+  &--error {
+    border-color: #e8b7b7;
+    color: #7f2222;
+
+    button {
+      margin-top: 0.7rem;
+      border: none;
+      border-radius: 0.6rem;
+      background: #8b2f2f;
+      color: #fff;
+      padding: 0.5rem 0.85rem;
+      font: inherit;
+    }
+  }
+}
+
+.product-grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+
+  button {
+    border: 1px solid #d4b695;
+    background: #fff;
+    border-radius: 0.6rem;
+    padding: 0.45rem 0.8rem;
+    font: inherit;
+    color: #6d4e30;
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 940px) {
+  .filters-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .filters-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+}

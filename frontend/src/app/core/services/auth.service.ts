@@ -27,6 +27,7 @@ export class AuthService {
   readonly role = computed<UserRole | null>(() => this.usuario()?.role ?? null);
   readonly autenticado = computed(() => Boolean(this.token()));
 
+  // Authenticates the user and persists the returned session.
   login(payload: LoginPayload) {
     return this.apiService.post<LoginResponse, LoginPayload>('/auth/login', payload).pipe(
       tap((session) => {
@@ -35,11 +36,13 @@ export class AuthService {
     );
   }
 
+  // Clears the persisted session and resets authentication state.
   logout(): void {
     localStorage.removeItem(SESSION_STORAGE_KEY);
     this.sessionSignal.set(null);
   }
 
+  // Reads the stored session from localStorage and validates its format.
   private readSession(): StoredSession | null {
     const rawSession = localStorage.getItem(SESSION_STORAGE_KEY);
 
@@ -55,6 +58,7 @@ export class AuthService {
     }
   }
 
+  // Persists the current session and updates the reactive signal.
   private writeSession(session: StoredSession): void {
     localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
     this.sessionSignal.set(session);

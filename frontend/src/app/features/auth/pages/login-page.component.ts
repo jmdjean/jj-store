@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
@@ -9,7 +10,7 @@ import type { ApiErrorResponse } from '../../../core/models/auth.models';
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +29,7 @@ export class LoginPageComponent {
     senha: ['', [Validators.required, Validators.minLength(6)]],
   });
 
+  // Validates credentials and triggers the login flow.
   protected submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -59,16 +61,19 @@ export class LoginPageComponent {
       });
   }
 
+  // Indicates whether the identifier field is currently invalid.
   protected get identificadorInvalido(): boolean {
     const control = this.form.controls.identificador;
     return control.invalid && (control.touched || control.dirty);
   }
 
+  // Indicates whether the password field is currently invalid.
   protected get senhaInvalida(): boolean {
     const control = this.form.controls.senha;
     return control.invalid && (control.touched || control.dirty);
   }
 
+  // Resolves the best API error message for login failures.
   private resolveApiErrorMessage(error: unknown): string {
     if (!(error instanceof HttpErrorResponse)) {
       return 'Não foi possível realizar o login agora. Tente novamente.';

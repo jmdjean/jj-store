@@ -3,6 +3,8 @@ import cors from 'cors';
 import { healthRouter } from './routes/health.routes.js';
 import { authRouter } from './routes/auth.routes.js';
 import { adminRouter } from './routes/admin.routes.js';
+import { meRouter } from './routes/me.routes.js';
+import { productsRouter } from './routes/products.routes.js';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 
 export function createApp() {
@@ -14,6 +16,8 @@ export function createApp() {
   app.use(healthRouter);
   app.use(authRouter);
   app.use(adminRouter);
+  app.use(meRouter);
+  app.use(productsRouter);
 
   app.use(errorMiddleware);
 

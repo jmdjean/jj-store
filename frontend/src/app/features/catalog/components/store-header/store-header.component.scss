@@ -1,0 +1,84 @@
+.store-header {
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) 1fr auto;
+  gap: 0.9rem;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #e5d8c8;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #fff8ef, #fff);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+
+  &__name {
+    font-weight: 700;
+    color: #2f2214;
+    font-size: 1.1rem;
+  }
+
+  &__subtitle {
+    font-size: 0.8rem;
+    color: #7b6042;
+  }
+}
+
+.search {
+  display: flex;
+  gap: 0.55rem;
+
+  input {
+    width: 100%;
+    border: 1px solid #d6b897;
+    border-radius: 999px;
+    background: #fff;
+    padding: 0.62rem 0.95rem;
+    font: inherit;
+  }
+
+  button {
+    border: none;
+    border-radius: 999px;
+    background: #b55f1f;
+    color: #fff;
+    padding: 0.62rem 1.15rem;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}
+
+.cart-button {
+  border: 1px solid #c8a77f;
+  border-radius: 999px;
+  background: #fff;
+  color: #3f2d19;
+  padding: 0.55rem 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font: inherit;
+  font-weight: 600;
+}
+
+.cart-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+  border-radius: 999px;
+  background: #1f8f66;
+  color: #fff;
+  font-size: 0.78rem;
+  padding: 0 0.35rem;
+}
+
+@media (max-width: 860px) {
+  .store-header {
+    grid-template-columns: 1fr;
+  }
+}

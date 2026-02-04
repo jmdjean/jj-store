@@ -1,0 +1,23 @@
+<header class="store-header">
+  <a class="brand" routerLink="/">
+    <span class="brand__name">JJ Store</span>
+    <span class="brand__subtitle">Catálogo online</span>
+  </a>
+
+  <form class="search" (submit)="onSubmit($event)" role="search" aria-label="Buscar produtos">
+    <input
+      type="search"
+      name="catalogSearch"
+      [ngModel]="searchValue"
+      (ngModelChange)="searchValue = $event"
+      placeholder="Buscar produtos"
+      aria-label="Buscar produtos"
+    />
+    <button type="submit">Buscar</button>
+  </form>
+
+  <button type="button" class="cart-button" aria-label="Abrir carrinho">
+    Carrinho
+    <span class="cart-badge">{{ cartItems }}</span>
+  </button>
+</header>

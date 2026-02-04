@@ -1,65 +1,74 @@
-# Etapa 07 — RAG v1: Indexação de Produto (Markdown → Vetor) + Pesquisa Semântica
+# Stage 07 - RAG v1: Registration Indexing (Markdown -> Vector) + Semantic Search
 
-# Convenções gerais (aplicáveis a todas as etapas)
+# Global conventions (applies to all stages)
 
-> **Padrão de idioma (obrigatório):** toda a linguagem do sistema deve ser **Português (Brasil) – pt-BR**,
-> incluindo: mensagens de erro/sucesso, validações, respostas da API, textos de UI, labels, placeholders,
-> logs voltados ao usuário (quando aplicável) e documentação de telas.
+> **Language standard (mandatory):** all user-facing system language must be **Portuguese (Brazil) - pt-BR**,
+> including: success/error messages, validations, API responses, UI labels/placeholders,
+> user-facing logs (when applicable), and screen documentation.
 
-## Regras de entrega
-- Implementar **somente** o escopo desta etapa.
-- Manter a arquitetura em camadas no backend (routes/controllers → services → repositories).
-- No frontend (Angular 21), manter áreas/módulos e **guards** por autenticação e role.
-- Garantir **build/test** passando (quando existir).
-- Ao finalizar, realizar **1 commit** com mensagem clara (pt-BR ou padrão conventional commits).
+## Delivery rules
+- Implement **only** this stage scope.
+- Keep backend layered architecture (routes/controllers -> services -> repositories).
+- In frontend (Angular 21), keep areas/modules and **guards** by auth and role.
+- Ensure **build/tests** pass (when available).
+- At the end, create **1 commit** with a clear message.
 
-## Definições de roles
+## Role definitions
 - `ADMIN`
 - `MANAGER`
 - `CUSTOMER`
 
-## Padrão de status do pedido (v1)
+## Order status standard (v1)
 - `CREATED`, `PAID`, `PICKING`, `SHIPPED`, `DELIVERED`, `CANCELED`
 
+## Data guideline (mandatory for all stages)
+- Use **one single Supabase PostgreSQL database** (IPv4-compatible via Supabase pooler/connection string).
+- The same database contains two logical layers:
+  - relational (registrations and transactions)
+  - vector for RAG (pgvector)
+- Mandatory rule for **every relevant create/update** (product, manager, customer, order, order_item, etc.):
+  1) relational persistence succeeds;
+  2) record is transformed into standardized `.md`;
+  3) embedding is generated;
+  4) vector record is inserted/upserted.
 
-## Objetivo
-Sincronizar produtos do PostgreSQL para uma base vetorial (RAG) e permitir pesquisa semântica para ADMIN/MANAGER.
+## Objective
+Establish unified RAG architecture in Supabase with vector indexing for all key registrations and semantic search for ADMIN/MANAGER.
 
-## Decisão técnica (v1 recomendada)
-- Implementar RAG com **pgvector** dentro do PostgreSQL, para simplificar infraestrutura.
-- Criar tabela `rag_products` (ou equivalente) com:
-  - `product_id`, `content_markdown`, `embedding vector`, `updated_at`
+## Technical decision (v1)
+- Implement RAG with **pgvector** inside Supabase PostgreSQL (no separate vector database).
+- Create unified vector structure (example: `rag_documents`) with minimum fields:
+  - `id`, `entity_type`, `entity_id`, `content_markdown`, `embedding`, `metadata_json`, `updated_at`
+- Standardize Markdown templates by entity (`product`, `customer`, `manager`, `order`, `order_item`, etc.).
 
-> Se optar por serviço externo, criar um adapter com interface comum e implementar o client.
-
-## Checklist de tarefas
+## Task checklist
 ### Backend
-- [ ] Implementar geração de Markdown do produto (padrão definido no plano).
-- [ ] Ao criar/editar produto:
-  - [ ] salvar relacional
-  - [ ] gerar markdown
-  - [ ] gerar embedding
-  - [ ] upsert no índice vetorial
+- [ ] Implement Markdown generator per entity type.
+- [ ] Implement embedding service with retry and failure handling.
+- [ ] Implement automatic post-relational sync for:
+  - [ ] products
+  - [ ] customers
+  - [ ] managers
+  - [ ] orders and items
 - [ ] `POST /admin/rag/search` (ADMIN/MANAGER):
-  - input: `{ "query": "texto..." }`
-  - gerar embedding da query
-  - buscar topK similares
-  - retornar resultados com:
-    - lista de produtos relacionados (id, nome, score, trecho)
-    - mensagem pt-BR
-- [ ] Padronizar erros pt-BR.
+  - input: `{ "query": "text...", "topK": 5, "entityTypes": [] }`
+  - generate query embedding
+  - search topK similar documents in pgvector
+  - return `entity_type`, `entity_id`, score, snippet, pt-BR message
+- [ ] Standardize pt-BR error responses.
 
 ### Frontend
-- [ ] Tela “Pesquisar RAG” (admin/manager):
-  - textarea + botão pesquisar
+- [ ] "Pesquisar RAG" screen (admin/manager):
+  - textarea + search button
   - loading state
-  - exibir resposta/resultados e “fontes” (produtos sugeridos)
-- [ ] Mensagens pt-BR (ex.: “Digite uma pergunta para pesquisar”).
+  - optional filters by entity type
+  - response/results with "fontes"
+- [ ] pt-BR messages (example: "Digite uma pergunta para pesquisar").
 
-## Critérios de aceite
-- [ ] Produto cadastrado atualiza índice vetorial.
-- [ ] Pesquisa retorna topK resultados coerentes.
-- [ ] UI exibe resultados de forma clara.
+## Acceptance criteria
+- [ ] Every relevant registration creates/updates vector Markdown document in same Supabase database.
+- [ ] Search returns coherent topK results with filters.
+- [ ] UI displays results clearly.
 
-## Commit sugerido
-- `feat(rag): indexação vetorial e pesquisa semântica (pt-BR)`
+## Suggested commit
+- `feat(rag): unified vector indexing and semantic search (pt-BR)`
