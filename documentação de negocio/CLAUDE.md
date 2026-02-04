@@ -148,7 +148,20 @@ Example stages:
 
 ---
 
-## 8) `/init` behavior
+## 8) Mandatory skill routing
+
+The agent must route work to these skills:
+
+- Frontend code generation: always use `01-skill-angular21-signals-signal-forms`.
+- Frontend UX/UI quality: always use `05-skill-ux-ui-professional` together with `01-skill-angular21-signals-signal-forms` (nested/combined usage).
+- Node.js backend code generation: always use `02-skill-nodejs-typescript`.
+- Relational database work: always use `03-skill-postgres-relational`.
+- Vector database / RAG work: always use `04-skill-pgvector-rag`.
+- Whenever the user asks to commit and push: always use `SKILL_commit_push_main`.
+
+---
+
+## 9) `/init` behavior
 
 When the user asks for `/init`, the agent must:
 - create/update `CLAUDE.md` and `AGENTS.md` with project rules

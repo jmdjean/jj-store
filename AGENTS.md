@@ -148,7 +148,20 @@ Example stages:
 
 ---
 
-## 8) `/init` behavior
+## 8) Mandatory skill routing
+
+The agent must route work to these skills:
+
+- Any frontend code request: always use `angular21-enterprise.skill.md`.
+- Frontend UX/UI quality: always apply `05-skill-ux-ui-professional.md` together with `angular21-enterprise.skill.md`.
+- Any Node.js backend code request: always use `node-ecommerce-nestjs.skill.md`.
+- Relational database work: always use `03-skill-postgres-relational`.
+- Vector database / RAG work: always use `04-skill-pgvector-rag`.
+- Whenever the user asks to commit and push: always use `SKILL_commit_push_main`.
+
+---
+
+## 9) `/init` behavior
 
 When the user asks for `/init`, the agent must:
 - create/update `CLAUDE.md` and `AGENTS.md` with project rules

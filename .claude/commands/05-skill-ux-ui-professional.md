@@ -30,9 +30,9 @@ Keyboard navigation, visible focus, sufficient contrast, and semantic cues.
 - Always implement loading/empty/error states.
 
 ### pt-BR user message examples
-- "Nao foi possivel carregar os dados. Tente novamente."
-- "Sua sessao expirou. Faca login novamente."
-- "Campo obrigatorio."
+- "Não foi possível carregar os dados. Tente novamente."
+- "Sua sessão expirou. Faça login novamente."
+- "Campo obrigatório."
 
 ---
 
