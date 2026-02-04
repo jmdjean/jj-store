@@ -12,4 +12,8 @@ export class ApiService {
   get<TResponse>(path: string) {
     return this.httpClient.get<TResponse>(`${this.baseUrl}${path}`);
   }
+
+  post<TResponse, TPayload>(path: string, payload: TPayload) {
+    return this.httpClient.post<TResponse>(`${this.baseUrl}${path}`, payload);
+  }
 }

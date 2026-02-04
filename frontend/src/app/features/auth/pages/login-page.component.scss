@@ -1,0 +1,64 @@
+.login-page {
+  margin: 0 auto;
+  max-width: 420px;
+  padding: 1rem;
+}
+
+h2 {
+  margin-bottom: 0.25rem;
+}
+
+p {
+  margin-top: 0;
+  color: #3e4c5a;
+}
+
+form {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+label {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  border: 1px solid #c7d7e6;
+  border-radius: 0.7rem;
+  padding: 0.7rem 0.8rem;
+  font: inherit;
+}
+
+input:focus-visible {
+  outline: 2px solid #108ab2;
+  outline-offset: 2px;
+}
+
+button {
+  margin-top: 0.5rem;
+  border: 0;
+  border-radius: 0.7rem;
+  background: #108ab2;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button[disabled] {
+  cursor: progress;
+  opacity: 0.8;
+}
+
+.erro {
+  margin: -0.1rem 0 0;
+  color: #b62828;
+  font-size: 0.86rem;
+}
+
+.destaque {
+  margin-top: 0.4rem;
+}
