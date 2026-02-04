@@ -5,7 +5,7 @@ export class HealthRepository {
   getHealthData(): HealthResponse {
     return {
       status: 'ok',
-      mensagem: 'Servico online',
+      mensagem: 'Serviço online',
     };
   }
 }

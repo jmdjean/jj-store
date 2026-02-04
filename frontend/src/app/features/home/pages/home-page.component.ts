@@ -9,5 +9,5 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 })
 export class HomePageComponent {
   protected readonly successMessage = signal('Ambiente inicial carregado com sucesso.');
-  protected readonly errorMessage = signal('Nao foi possivel carregar os dados. Tente novamente.');
+  protected readonly errorMessage = signal('Não foi possível carregar os dados. Tente novamente.');
 }

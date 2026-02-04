@@ -10,7 +10,7 @@ describe('GET /health', () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       status: 'ok',
-      mensagem: 'Servico online',
+      mensagem: 'Serviço online',
     });
   });
 });

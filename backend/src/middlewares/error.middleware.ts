@@ -16,6 +16,6 @@ export function errorMiddleware(
   console.error(error);
 
   response.status(500).json({
-    mensagem: 'Nao foi possivel concluir a operacao.',
+    mensagem: 'Não foi possível concluir a operação.',
   });
 }
