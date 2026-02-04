@@ -16,6 +16,7 @@ Standardize the final git flow when the user asks to commit and push changes.
 - Use only when the user explicitly asks for commit/push.
 - Do not include unrelated files.
 - Never use destructive git commands unless explicitly requested.
+- The commit summary text must be written in English.
 
 ## Example
 ```bash
