@@ -30,6 +30,7 @@
     <div class="actions">
       @if (authService.role() === 'CUSTOMER') {
         <a routerLink="/minha-conta/perfil">Minha conta</a>
+        <a routerLink="/minhas-compras">Minhas compras</a>
       }
       <a routerLink="/admin">Acessar área admin</a>
       <button type="button" (click)="logout()">Sair</button>

@@ -34,6 +34,14 @@ export const routes: Routes = [
     loadChildren: () => import('./features/cart/routes').then((module) => module.CART_ROUTES),
   },
   {
+    path: 'minhas-compras',
+    canActivate: [authGuard, roleGuard],
+    data: {
+      roles: ['CUSTOMER'],
+    },
+    loadChildren: () => import('./features/orders/routes').then((module) => module.ORDERS_ROUTES),
+  },
+  {
     path: '',
     loadChildren: () => import('./features/catalog/routes').then((module) => module.CATALOG_ROUTES),
   },

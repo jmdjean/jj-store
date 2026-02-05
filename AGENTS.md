@@ -158,6 +158,8 @@ Example stages:
 
 The agent must route work to these skills:
 
+- All skills that the agent must use are stored under `.claude/commands` in this repository.
+
 - Never use `moai-domain-frontend` in this repository.
 - Any frontend code request: always use `angular21-enterprise.skill.md`.
 - Frontend UX/UI quality: always apply `05-skill-ux-ui-professional.md` together with `angular21-enterprise.skill.md`.

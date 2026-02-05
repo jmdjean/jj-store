@@ -1,0 +1,73 @@
+<section class="order-detail-page">
+  <header class="page-header">
+    <h1>Detalhes do pedido</h1>
+    <button type="button" (click)="backToOrders()">Voltar para minhas compras</button>
+  </header>
+
+  @if (myOrdersFacade.successMessage()) {
+    <div class="state-card state-card--success" role="status">{{ myOrdersFacade.successMessage() }}</div>
+  }
+
+  @if (myOrdersFacade.detailLoading()) {
+    <div class="state-card" role="status">Carregando detalhes do pedido...</div>
+  } @else if (myOrdersFacade.detailError()) {
+    <div class="state-card state-card--error" role="alert">{{ myOrdersFacade.detailError() }}</div>
+  } @else if (myOrdersFacade.selectedOrder(); as order) {
+    <article class="order-info">
+      <div class="order-info__row">
+        <strong>Número:</strong>
+        <span>{{ order.id }}</span>
+      </div>
+      <div class="order-info__row">
+        <strong>Status:</strong>
+        <span>{{ myOrdersFacade.getStatusLabel(order.status) }}</span>
+      </div>
+      <div class="order-info__row">
+        <strong>Data:</strong>
+        <span>{{ formatDate(order.createdAt) }}</span>
+      </div>
+      <div class="order-info__row">
+        <strong>Total:</strong>
+        <span>{{ formatCurrency(order.totalAmountCents) }}</span>
+      </div>
+
+      @if (order.canCancel) {
+        <button
+          type="button"
+          [disabled]="myOrdersFacade.isCanceling(order.id)"
+          (click)="cancelOrder(order.id)"
+        >
+          {{ myOrdersFacade.isCanceling(order.id) ? 'Cancelando...' : 'Cancelar pedido' }}
+        </button>
+      }
+    </article>
+
+    <article class="shipping-card">
+      <h2>Endereço de entrega</h2>
+      <p>{{ order.shippingAddress.street }}, {{ order.shippingAddress.streetNumber }}</p>
+      <p>{{ order.shippingAddress.neighborhood }} - {{ order.shippingAddress.city }}/{{ order.shippingAddress.state }}</p>
+      <p>CEP: {{ order.shippingAddress.postalCode }}</p>
+      @if (order.shippingAddress.complement) {
+        <p>Complemento: {{ order.shippingAddress.complement }}</p>
+      }
+    </article>
+
+    <article class="items-card">
+      <h2>Itens do pedido</h2>
+      <ul>
+        @for (item of order.items; track item.id) {
+          <li>
+            <div>
+              <strong>{{ item.productName }}</strong>
+              <span>{{ item.productCategory }}</span>
+            </div>
+            <div>
+              <span>{{ item.quantity }} x {{ formatCurrency(item.unitPriceCents) }}</span>
+              <strong>{{ formatCurrency(item.lineTotalCents) }}</strong>
+            </div>
+          </li>
+        }
+      </ul>
+    </article>
+  }
+</section>

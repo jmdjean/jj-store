@@ -5,6 +5,7 @@ import type { ProductFiltersInput } from '../services/products.types.js';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  // Handles product listing requests with optional query filters and pagination.
   async listProducts(request: Request, response: Response, next: NextFunction): Promise<void> {
     try {
       const filters: ProductFiltersInput = {
@@ -23,6 +24,7 @@ export class ProductsController {
     }
   }
 
+  // Handles product detail retrieval by ID from route parameters.
   async getProductById(request: Request, response: Response, next: NextFunction): Promise<void> {
     try {
       const productId = this.readRouteParam(request.params.id);
@@ -33,6 +35,7 @@ export class ProductsController {
     }
   }
 
+  // Extracts string value from query parameter handling both single values and arrays.
   private readQueryValue(queryValue: unknown): string | undefined {
     if (typeof queryValue === 'string') {
       return queryValue;
@@ -46,6 +49,7 @@ export class ProductsController {
     return undefined;
   }
 
+  // Extracts string value from route parameter handling both single values and arrays.
   private readRouteParam(routeParam: unknown): string {
     if (typeof routeParam === 'string') {
       return routeParam;

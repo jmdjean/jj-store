@@ -14,6 +14,7 @@ type UsersRepositoryLike = {
 export class AuthService {
   constructor(private readonly usersRepository: UsersRepositoryLike) {}
 
+  // Authenticates user credentials and returns a JWT token with user information.
   async login(input: LoginInput): Promise<LoginResponse> {
     const identifier = this.resolveIdentifier(input);
     const senha = this.resolvePassword(input);
@@ -55,6 +56,7 @@ export class AuthService {
     };
   }
 
+  // Extracts and validates the user identifier (username or email) from login input.
   private resolveIdentifier(input: LoginInput): string {
     const identifier = input.identificador ?? input.username ?? input.email ?? '';
 
@@ -65,6 +67,7 @@ export class AuthService {
     return identifier.trim();
   }
 
+  // Extracts and validates the password from login input.
   private resolvePassword(input: LoginInput): string {
     const senha = input.senha ?? '';
 

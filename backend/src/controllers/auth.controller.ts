@@ -10,6 +10,7 @@ export class AuthController {
     private readonly customerProfileService: CustomerProfileService,
   ) {}
 
+  // Handles user login requests and returns authentication token.
   async login(request: Request, response: Response, next: NextFunction): Promise<void> {
     try {
       const payload = request.body as LoginInput;
@@ -20,6 +21,7 @@ export class AuthController {
     }
   }
 
+  // Handles customer registration requests and creates new customer account.
   async registerCustomer(request: Request, response: Response, next: NextFunction): Promise<void> {
     try {
       const payload = request.body as RegisterCustomerInput;

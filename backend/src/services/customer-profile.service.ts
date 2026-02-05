@@ -40,6 +40,7 @@ type NormalizedRegisterInput = {
 export class CustomerProfileService {
   constructor(private readonly customerProfileRepository: CustomerProfileRepository) {}
 
+  // Creates a new customer account with validated input and hashed password.
   async registerCustomer(input: RegisterCustomerInput): Promise<RegisterCustomerResponse> {
     const normalizedInput = this.validateAndNormalizeRegisterInput(input);
     const passwordHash = await bcrypt.hash(normalizedInput.password, 10);
@@ -71,6 +72,7 @@ export class CustomerProfileService {
     }
   }
 
+  // Retrieves customer profile by user ID and throws error if not found.
   async getProfile(userId: string): Promise<CustomerProfileResponse> {
     const profile = await this.customerProfileRepository.findByUserId(userId);
 
@@ -81,6 +83,7 @@ export class CustomerProfileService {
     return this.toCustomerProfileResponse(profile);
   }
 
+  // Updates customer profile with validated input and returns updated data.
   async updateProfile(userId: string, input: UpdateCustomerProfileInput): Promise<CustomerProfileResponse> {
     const normalizedInput = this.validateAndNormalizeUpdateInput(input);
 
@@ -110,6 +113,7 @@ export class CustomerProfileService {
     }
   }
 
+  // Validates and normalizes all registration input fields including email, password, CPF, and address.
   private validateAndNormalizeRegisterInput(input: RegisterCustomerInput): NormalizedRegisterInput {
     const email = this.validateEmail(input.email);
     const password = this.validatePassword(input.password);
@@ -130,6 +134,7 @@ export class CustomerProfileService {
     };
   }
 
+  // Validates and normalizes all profile update input fields excluding CPF and password.
   private validateAndNormalizeUpdateInput(
     input: UpdateCustomerProfileInput,
   ): RepositoryUpdateCustomerProfileInput {
@@ -154,6 +159,7 @@ export class CustomerProfileService {
     };
   }
 
+  // Validates email format and returns normalized lowercase version.
   private validateEmail(email: string | undefined): string {
     const normalizedEmail = this.requireText(email, 'Informe um e-mail válido.');
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -165,6 +171,7 @@ export class CustomerProfileService {
     return normalizedEmail.toLowerCase();
   }
 
+  // Validates password length (minimum 6 characters) and returns trimmed value.
   private validatePassword(password: string | undefined): string {
     const normalizedPassword = this.requireText(password, 'Informe a senha para continuar.');
 
@@ -175,6 +182,7 @@ export class CustomerProfileService {
     return normalizedPassword;
   }
 
+  // Validates CPF format and checksum algorithm, returns only digits.
   private validateCpf(cpf: string | undefined): string {
     const digits = (cpf ?? '').replace(/\D/g, '');
 
@@ -185,6 +193,7 @@ export class CustomerProfileService {
     return digits;
   }
 
+  // Validates birth date format (YYYY-MM-DD) and ensures it's not in the future.
   private validateBirthDate(birthDate: string | undefined): string {
     const value = this.requireText(birthDate, 'Informe a data de nascimento.');
 
@@ -207,6 +216,7 @@ export class CustomerProfileService {
     return value;
   }
 
+  // Validates all address fields including street, number, neighborhood, city, state (UF), and postal code (CEP).
   private validateAddress(
     address: RegisterCustomerInput['address'] | UpdateCustomerProfileInput['address'],
   ): NormalizedAddress {
@@ -237,6 +247,7 @@ export class CustomerProfileService {
     };
   }
 
+  // Normalizes optional phone number to digits only and validates length (10-11 digits).
   private normalizeOptionalPhone(phone: string | undefined): string | null {
     const normalizedPhone = this.normalizeOptionalText(phone);
 
@@ -253,6 +264,7 @@ export class CustomerProfileService {
     return digits;
   }
 
+  // Requires non-empty text value and throws error with custom message if missing.
   private requireText(value: string | undefined, message: string): string {
     const normalizedValue = value?.trim() ?? '';
 
@@ -263,11 +275,13 @@ export class CustomerProfileService {
     return normalizedValue;
   }
 
+  // Normalizes optional text by trimming and returns null if empty.
   private normalizeOptionalText(value: string | undefined): string | null {
     const normalizedValue = value?.trim() ?? '';
     return normalizedValue ? normalizedValue : null;
   }
 
+  // Maps database customer profile to API response format.
   private toCustomerProfileResponse(profile: CustomerProfile): CustomerProfileResponse {
     return {
       cpf: profile.cpf,
@@ -287,6 +301,7 @@ export class CustomerProfileService {
     };
   }
 
+  // Validates CPF using Brazilian algorithm including check digits verification.
   private isCpfValid(cpf: string): boolean {
     if (/^(\d)\1{10}$/.test(cpf)) {
       return false;
@@ -299,6 +314,7 @@ export class CustomerProfileService {
     return digits[9] === firstDigit && digits[10] === secondDigit;
   }
 
+  // Calculates CPF check digit using weighted sum algorithm.
   private calculateCpfDigit(digits: number[], startWeight: number): number {
     let sum = 0;
 
@@ -310,6 +326,7 @@ export class CustomerProfileService {
     return rest === 10 ? 0 : rest;
   }
 
+  // Handles database unique constraint violations and throws appropriate user-facing errors.
   private handleDatabaseError(error: unknown): void {
     const databaseError = error as DatabaseErrorLike;
 

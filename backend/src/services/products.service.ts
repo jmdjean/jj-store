@@ -18,6 +18,7 @@ const MAX_PAGE_SIZE = 50;
 export class ProductsService {
   constructor(private readonly productsRepository: ProductsRepository) {}
 
+  // Retrieves paginated product list with optional filters for search, category, and price range.
   async listProducts(input: ProductFiltersInput): Promise<ProductListResponse> {
     const filters = this.validateAndNormalizeFilters(input);
     const result = await this.productsRepository.findMany(filters);
@@ -33,6 +34,7 @@ export class ProductsService {
     };
   }
 
+  // Retrieves product details by ID and throws error if not found.
   async getProductById(productId: string): Promise<ProductDetailResponse> {
     const normalizedProductId = productId.trim();
 
@@ -51,6 +53,7 @@ export class ProductsService {
     };
   }
 
+  // Validates and normalizes product filter inputs including pagination and price range constraints.
   private validateAndNormalizeFilters(input: ProductFiltersInput): ProductQueryInput {
     const q = this.normalizeOptionalText(input.q);
     const category = this.normalizeOptionalText(input.category);
@@ -77,6 +80,7 @@ export class ProductsService {
     };
   }
 
+  // Parses string to positive integer with fallback and validates it's greater than zero.
   private parsePositiveInteger(
     value: string | undefined,
     fallback: number,
@@ -95,6 +99,7 @@ export class ProductsService {
     return parsedValue;
   }
 
+  // Parses optional price string to cents and validates it's a non-negative number.
   private parseOptionalPrice(value: string | undefined, fieldName: string): number | null {
     const normalizedValue = value?.trim() ?? '';
 
@@ -111,11 +116,13 @@ export class ProductsService {
     return Math.round(parsedValue * 100);
   }
 
+  // Normalizes optional text by trimming and returns null if empty.
   private normalizeOptionalText(value: string | undefined): string | null {
     const normalizedValue = value?.trim() ?? '';
     return normalizedValue || null;
   }
 
+  // Maps database product record to API product summary format with calculated availability.
   private toProductSummary(product: ProductDatabaseRecord): ProductSummary {
     return {
       id: product.id,
@@ -131,6 +138,7 @@ export class ProductsService {
     };
   }
 
+  // Calculates total number of pages for pagination based on items and page size.
   private calculateTotalPages(totalItems: number, pageSize: number): number {
     if (totalItems === 0) {
       return 0;
