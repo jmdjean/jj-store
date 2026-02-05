@@ -90,12 +90,26 @@ export class MeController {
         throw new AppError(401, 'Usuário não autenticado.');
       }
 
-      const orderId = request.params.id ?? '';
+      const orderId = this.readRouteParam(request.params.id);
       const order = await this.myOrdersService.getOrderById(userId, orderId);
       response.status(200).json(order);
     } catch (error) {
       next(error);
     }
+  }
+
+
+  // Extracts a string route param from Express unknown-compatible param values.
+  private readRouteParam(routeParam: string | string[] | undefined): string {
+    if (typeof routeParam === 'string') {
+      return routeParam;
+    }
+
+    if (Array.isArray(routeParam)) {
+      return routeParam[0] ?? '';
+    }
+
+    return '';
   }
 
   // Cancels one authenticated customer order when business rules allow it.
@@ -111,7 +125,7 @@ export class MeController {
         throw new AppError(401, 'Usuário não autenticado.');
       }
 
-      const orderId = request.params.id ?? '';
+      const orderId = this.readRouteParam(request.params.id);
       const cancelResponse = await this.myOrdersService.cancelOrder(userId, orderId);
       response.status(200).json(cancelResponse);
     } catch (error) {

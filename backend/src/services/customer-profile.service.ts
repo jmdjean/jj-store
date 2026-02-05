@@ -11,6 +11,7 @@ import type {
   RegisterCustomerResponse,
   UpdateCustomerProfileInput,
 } from './customer-profile.types.js';
+import { RagRepository } from '../repositories/rag.repository.js';
 
 type DatabaseErrorLike = {
   code?: string;
@@ -37,8 +38,13 @@ type NormalizedRegisterInput = {
   address: NormalizedAddress;
 };
 
+const EMBEDDING_DIMENSION = 8;
+
 export class CustomerProfileService {
-  constructor(private readonly customerProfileRepository: CustomerProfileRepository) {}
+  constructor(
+    private readonly customerProfileRepository: CustomerProfileRepository,
+    private readonly ragRepository: RagRepository = new RagRepository(),
+  ) {}
 
   // Creates a new customer account with validated input and hashed password.
   async registerCustomer(input: RegisterCustomerInput): Promise<RegisterCustomerResponse> {
@@ -61,6 +67,8 @@ export class CustomerProfileService {
         postalCode: normalizedInput.address.postalCode,
         complement: normalizedInput.address.complement,
       });
+
+      await this.syncCustomerRagDocument(profile);
 
       return {
         mensagem: 'Cadastro realizado com sucesso.',
@@ -105,6 +113,8 @@ export class CustomerProfileService {
       if (!updatedProfile) {
         throw new AppError(404, 'Perfil não encontrado.');
       }
+
+      await this.syncCustomerRagDocument(updatedProfile);
 
       return this.toCustomerProfileResponse(updatedProfile);
     } catch (error) {
@@ -279,6 +289,53 @@ export class CustomerProfileService {
   private normalizeOptionalText(value: string | undefined): string | null {
     const normalizedValue = value?.trim() ?? '';
     return normalizedValue ? normalizedValue : null;
+  }
+
+
+  // Upserts customer markdown and embedding in the vector layer.
+  private async syncCustomerRagDocument(profile: CustomerProfile): Promise<void> {
+    const contentMarkdown = this.buildCustomerMarkdown(profile);
+    const embedding = this.createEmbedding(contentMarkdown);
+
+    await this.ragRepository.upsertDocument({
+      entityType: 'customer',
+      entityId: profile.userId,
+      contentMarkdown,
+      embedding,
+      metadataJson: {
+        city: profile.city,
+        state: profile.state,
+        updatedAt: new Date().toISOString(),
+      },
+    });
+  }
+
+  // Builds standardized markdown representation for customer profile data.
+  private buildCustomerMarkdown(profile: CustomerProfile): string {
+    return [
+      '# Cliente',
+      `- ID usuário: ${profile.userId}`,
+      `- Nome: ${profile.fullName}`,
+      `- CPF: ${profile.cpf}`,
+      `- E-mail: ${profile.email}`,
+      `- Telefone: ${profile.phone ?? 'não informado'}`,
+      `- Cidade: ${profile.city}`,
+      `- UF: ${profile.state}`,
+    ].join('\n');
+  }
+
+  // Generates deterministic fixed-size embedding vector for markdown content.
+  private createEmbedding(content: string): number[] {
+    const vector = new Array<number>(EMBEDDING_DIMENSION).fill(0);
+
+    for (let index = 0; index < content.length; index += 1) {
+      const charCode = content.charCodeAt(index);
+      const bucket = index % EMBEDDING_DIMENSION;
+      vector[bucket] += (charCode % 97) / 97;
+    }
+
+    const magnitude = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
+    return magnitude === 0 ? vector : vector.map((value) => value / magnitude);
   }
 
   // Maps database customer profile to API response format.

@@ -1,0 +1,55 @@
+<section class="rag-page" aria-labelledby="titulo-rag">
+  <h2 id="titulo-rag">Pesquisar RAG</h2>
+
+  <form [formGroup]="searchForm" (ngSubmit)="submitSearch()" class="rag-form">
+    <label for="pergunta">Pergunta</label>
+    <textarea
+      id="pergunta"
+      formControlName="query"
+      rows="4"
+      placeholder="Digite uma pergunta para pesquisar"
+    ></textarea>
+
+    <div class="topk-field">
+      <label for="topK">Top K</label>
+      <input id="topK" type="number" min="1" max="20" formControlName="topK" />
+    </div>
+
+    <fieldset>
+      <legend>Filtrar por tipo de entidade</legend>
+
+      <label><input type="checkbox" formControlName="product" /> Produtos</label>
+      <label><input type="checkbox" formControlName="customer" /> Clientes</label>
+      <label><input type="checkbox" formControlName="manager" /> Gestores</label>
+      <label><input type="checkbox" formControlName="order" /> Pedidos</label>
+      <label><input type="checkbox" formControlName="orderItem" /> Itens de pedido</label>
+    </fieldset>
+
+    <button type="submit" [disabled]="isLoading()">{{ isLoading() ? 'Pesquisando...' : 'Pesquisar' }}</button>
+  </form>
+
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  <p class="message">{{ mensagem() }}</p>
+
+  <section class="results" aria-label="Fontes da pesquisa">
+    <h3>Fontes</h3>
+
+    @if (results().length === 0) {
+      <p>Nenhuma fonte para exibir.</p>
+    } @else {
+      <ul>
+        @for (result of results(); track result.entityId) {
+          <li>
+            <p><strong>Tipo:</strong> {{ result.entityType }}</p>
+            <p><strong>Identificador:</strong> {{ result.entityId }}</p>
+            <p><strong>Score:</strong> {{ result.score }}</p>
+            <p><strong>Trecho:</strong> {{ result.snippet }}</p>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</section>
