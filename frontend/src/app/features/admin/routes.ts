@@ -2,6 +2,7 @@
 import { AdminPageComponent } from './pages/admin-page.component';
 import { AdminProductsPageComponent } from './pages/admin-products-page.component';
 import { AdminProductFormPageComponent } from './pages/admin-product-form-page.component';
+import { RagSearchPageComponent } from './pages/rag-search-page.component';
 
 export const ADMIN_ROUTES: Routes = [
   {

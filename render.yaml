@@ -1,0 +1,47 @@
+services:
+  - type: web
+    name: jj-store-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: DATABASE_URL
+        fromDatabase:
+          name: jj-store-db
+          property: connectionString
+
+  - type: static
+    name: jj-store-frontend
+    rootDir: frontend
+    buildCommand: |
+      npm ci
+      sed -i "s|http://localhost:3000|$API_BASE_URL|g" src/environments/environment.prod.ts
+      npm run build
+    staticPublishPath: dist/frontend/browser
+    envVars:
+      - key: API_BASE_URL
+        fromService:
+          type: web
+          name: jj-store-backend
+          property: url
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+databases:
+  - name: jj-store-db
+    databaseName: jj_store
+    user: jj_store_user
+    plan: free
