@@ -27,4 +27,8 @@ export const ADMIN_ROUTES: Routes = [
       },
     ],
   },
+  {
+    path: 'rag',
+    component: RagSearchPageComponent,
+  },
 ];
