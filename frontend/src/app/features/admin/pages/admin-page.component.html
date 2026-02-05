@@ -1,7 +1,27 @@
-<section class="admin-page" aria-labelledby="titulo-admin">
-  <h2 id="titulo-admin">Área administrativa</h2>
-  <p>
-    Acesso permitido para os perfis ADMIN e MANAGER.
-    Usuário atual: <strong>{{ authService.usuario()?.nomeExibicao }}</strong>
-  </p>
+﻿<section class="admin-layout">
+  <aside class="admin-sidebar" aria-label="Menu administrativo">
+    <h1 class="brand">JJ Store Admin</h1>
+    <p class="brand-subtitle">Gestão de catálogo e inventário</p>
+
+    <nav class="admin-nav">
+      <a routerLink="/admin/produtos" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Produtos
+      </a>
+    </nav>
+  </aside>
+
+  <div class="admin-content-area">
+    <header class="admin-topbar">
+      <div>
+        <p class="topbar-caption">Área administrativa</p>
+        <h2>Olá, {{ authService.usuario()?.nomeExibicao }}</h2>
+      </div>
+
+      <button type="button" class="logout-button" (click)="logout()">Sair</button>
+    </header>
+
+    <main class="admin-content">
+      <router-outlet />
+    </main>
+  </div>
 </section>

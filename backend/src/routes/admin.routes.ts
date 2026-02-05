@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { AdminController } from '../controllers/admin.controller.js';
 import { AdminService } from '../services/admin.service.js';
 import { AdminRepository } from '../repositories/admin.repository.js';
@@ -11,11 +11,41 @@ const adminController = new AdminController(adminService);
 
 export const adminRouter = Router();
 
+adminRouter.get('/admin/painel', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response) => {
+  adminController.getPainel(request, response);
+});
+
+adminRouter.get('/admin/products', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response, next) => {
+  adminController.listProducts(request, response, next);
+});
+
 adminRouter.get(
-  '/admin/painel',
+  '/admin/products/:id',
   authGuard,
   roleGuard(['ADMIN', 'MANAGER']),
-  (request, response) => {
-    adminController.getPainel(request, response);
+  (request, response, next) => {
+    adminController.getProductById(request, response, next);
+  },
+);
+
+adminRouter.post('/admin/products', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response, next) => {
+  adminController.createProduct(request, response, next);
+});
+
+adminRouter.put(
+  '/admin/products/:id',
+  authGuard,
+  roleGuard(['ADMIN', 'MANAGER']),
+  (request, response, next) => {
+    adminController.updateProduct(request, response, next);
+  },
+);
+
+adminRouter.delete(
+  '/admin/products/:id',
+  authGuard,
+  roleGuard(['ADMIN', 'MANAGER']),
+  (request, response, next) => {
+    adminController.deleteProduct(request, response, next);
   },
 );
