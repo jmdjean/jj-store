@@ -12,4 +12,9 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class AdminPageComponent {
   protected readonly authService = inject(AuthService);
+
+  // Logs out current user and clears the persisted auth session.
+  protected logout(): void {
+    this.authService.logout();
+  }
 }

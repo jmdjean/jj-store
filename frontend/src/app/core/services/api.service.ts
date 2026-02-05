@@ -29,6 +29,11 @@ export class ApiService {
     return this.httpClient.put<TResponse>(`${this.baseUrl}${path}`, payload);
   }
 
+  // Sends a typed DELETE request to remove a resource.
+  delete<TResponse>(path: string) {
+    return this.httpClient.delete<TResponse>(`${this.baseUrl}${path}`);
+  }
+
   // Builds HttpParams from defined and non-empty values only.
   private buildHttpParams(
     params?: Record<string, string | number | boolean | null | undefined>,

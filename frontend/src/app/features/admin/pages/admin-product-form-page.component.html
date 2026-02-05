@@ -1,0 +1,90 @@
+﻿<section class="product-form-page" aria-labelledby="product-form-title">
+  <header class="page-header">
+    <h1 id="product-form-title">{{ isEditMode() ? 'Editar produto' : 'Novo produto' }}</h1>
+    <p>
+      {{
+        isEditMode()
+          ? 'Atualize dados de catálogo e estoque.'
+          : 'Preencha os campos para cadastrar um novo item no catálogo.'
+      }}
+    </p>
+  </header>
+
+  @if (adminProductsFacade.error()) {
+    <div class="state-card state-card--error" role="alert">{{ adminProductsFacade.error() }}</div>
+  }
+
+  <form class="product-form" [formGroup]="productForm" (ngSubmit)="saveProduct()">
+    <label>
+      Nome do produto
+      <input type="text" formControlName="name" placeholder="Ex.: Cafeteira Prime" />
+      @if (hasFieldError('name')) {
+        <span class="field-error">{{ getFieldError('name') }}</span>
+      }
+    </label>
+
+    <label>
+      Descrição
+      <textarea rows="4" formControlName="description" placeholder="Descreva o produto"></textarea>
+      @if (hasFieldError('description')) {
+        <span class="field-error">{{ getFieldError('description') }}</span>
+      }
+    </label>
+
+    <label>
+      Categoria
+      <input type="text" formControlName="category" placeholder="Ex.: Eletroportáteis" />
+      @if (hasFieldError('category')) {
+        <span class="field-error">{{ getFieldError('category') }}</span>
+      }
+    </label>
+
+    <div class="grid-two-columns">
+      <label>
+        Quantidade em estoque
+        <input type="number" min="0" formControlName="quantity" />
+        @if (hasFieldError('quantity')) {
+          <span class="field-error">{{ getFieldError('quantity') }}</span>
+        }
+      </label>
+
+      <label>
+        Peso (gramas)
+        <input type="number" min="0" formControlName="weightGrams" />
+        @if (hasFieldError('weightGrams')) {
+          <span class="field-error">{{ getFieldError('weightGrams') }}</span>
+        }
+      </label>
+    </div>
+
+    <div class="grid-two-columns">
+      <label>
+        Preço de custo
+        <input type="number" min="0" step="0.01" formControlName="purchasePrice" />
+        @if (hasFieldError('purchasePrice')) {
+          <span class="field-error">{{ getFieldError('purchasePrice') }}</span>
+        }
+      </label>
+
+      <label>
+        Preço de venda
+        <input type="number" min="0" step="0.01" formControlName="salePrice" />
+        @if (hasFieldError('salePrice')) {
+          <span class="field-error">{{ getFieldError('salePrice') }}</span>
+        }
+      </label>
+    </div>
+
+    <label>
+      URL da imagem (opcional)
+      <input type="url" formControlName="imageUrl" placeholder="https://..." />
+    </label>
+
+    <div class="form-actions">
+      <a routerLink="/admin/produtos" class="secondary-button">Cancelar</a>
+      <button type="submit" class="primary-button" [disabled]="adminProductsFacade.saving()">
+        {{ adminProductsFacade.saving() ? 'Salvando...' : 'Salvar produto' }}
+      </button>
+    </div>
+  </form>
+</section>

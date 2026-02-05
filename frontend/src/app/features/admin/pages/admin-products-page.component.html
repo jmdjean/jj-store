@@ -1,0 +1,98 @@
+﻿<section class="products-page" aria-labelledby="products-title">
+  <header class="page-header">
+    <div>
+      <h1 id="products-title">Produtos</h1>
+      <p>Gerencie cadastro, preços e estoque do catálogo.</p>
+    </div>
+
+    <a routerLink="/admin/produtos/novo" class="primary-button">Novo produto</a>
+  </header>
+
+  @if (adminProductsFacade.successMessage()) {
+    <div class="state-card state-card--success" role="status">{{ adminProductsFacade.successMessage() }}</div>
+  }
+
+  <form class="filters" [formGroup]="filtersForm" (ngSubmit)="applyFilters()">
+    <label>
+      Buscar
+      <input type="text" formControlName="q" placeholder="Nome ou descrição" />
+    </label>
+
+    <label>
+      Categoria
+      <input type="text" formControlName="category" placeholder="Ex.: Eletroportáteis" />
+    </label>
+
+    <label>
+      Status
+      <select formControlName="status">
+        <option value="active">Ativo</option>
+        <option value="inactive">Inativo</option>
+        <option value="all">Todos</option>
+      </select>
+    </label>
+
+    <div class="filter-actions">
+      <button type="submit" class="primary-button">Filtrar</button>
+      <button type="button" class="secondary-button" (click)="clearFilters()">Limpar</button>
+    </div>
+  </form>
+
+  @if (adminProductsFacade.loading()) {
+    <div class="state-card" role="status">Carregando produtos...</div>
+  } @else if (adminProductsFacade.error()) {
+    <div class="state-card state-card--error" role="alert">{{ adminProductsFacade.error() }}</div>
+  } @else if (adminProductsFacade.products().length === 0) {
+    <div class="state-card" role="status">Nenhum produto encontrado com os filtros informados.</div>
+  } @else {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Categoria</th>
+            <th>Estoque</th>
+            <th>Preço de custo</th>
+            <th>Preço de venda</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of adminProductsFacade.products(); track product.id) {
+            <tr>
+              <td>
+                <strong>{{ product.name }}</strong>
+                <p>{{ product.description }}</p>
+              </td>
+              <td>{{ product.category }}</td>
+              <td>{{ product.stockQuantity }}</td>
+              <td>{{ formatCurrency(product.purchasePrice) }}</td>
+              <td>{{ formatCurrency(product.salePrice) }}</td>
+              <td>
+                <span class="status-badge" [class.status-badge--inactive]="!product.isActive">
+                  {{ product.isActive ? 'Ativo' : 'Inativo' }}
+                </span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button type="button" class="secondary-button" (click)="editProduct(product)">
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    class="danger-button"
+                    [disabled]="adminProductsFacade.saving() || isDeleting(product.id)"
+                    (click)="deleteProduct(product)"
+                  >
+                    {{ isDeleting(product.id) ? 'Removendo...' : 'Remover' }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
