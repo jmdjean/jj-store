@@ -108,6 +108,20 @@ export class RagRepository {
     );
   }
 
+  // Deletes a vectorized document for one relational entity.
+  async deleteDocument(entityType: RagEntityType, entityId: string, query?: QueryExecutor): Promise<void> {
+    const execute = query ?? runQuery;
+
+    await execute(
+      `
+        DELETE FROM rag_documents
+        WHERE entity_type = $1
+          AND entity_id = $2
+      `,
+      [entityType, entityId],
+    );
+  }
+
   // Runs cosine similarity search with optional entity filtering.
   async searchDocuments(input: {
     embedding: number[];

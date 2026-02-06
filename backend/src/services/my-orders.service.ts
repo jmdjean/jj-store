@@ -1,6 +1,7 @@
 import { AppError } from '../common/app-error.js';
 import { runInTransaction, runQuery, type QueryExecutor } from '../config/database.js';
-import { env } from '../config/env.js';
+import { RagSyncService, type RagOrderItemSyncInput } from './rag-sync.service.js';
+import { RagRepository } from '../repositories/rag.repository.js';
 import {
   MyOrdersRepository,
   type OrderItemSnapshot,
@@ -21,8 +22,6 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 50;
 const CANCELLATION_WINDOW_DAYS = 3;
-const EMBEDDING_DIMENSION = env.embeddingDimension;
-
 type TransactionRunner = typeof runInTransaction;
 type QueryRunner = typeof runQuery;
 
@@ -31,6 +30,7 @@ export class MyOrdersService {
     private readonly myOrdersRepository: MyOrdersRepository,
     private readonly queryRunner: QueryRunner = runQuery,
     private readonly transactionRunner: TransactionRunner = runInTransaction,
+    private readonly ragSyncService: RagSyncService = new RagSyncService(new RagRepository()),
   ) {}
 
   // Lists authenticated customer orders with pagination metadata.
@@ -126,23 +126,31 @@ export class MyOrdersService {
         },
       });
 
-      const orderMarkdown = this.buildOrderMarkdown(canceledOrder, items);
-      const orderEmbedding = this.createEmbedding(orderMarkdown);
+      const ragOrderItems: RagOrderItemSyncInput[] = items.map((item) => ({
+        id: item.id,
+        orderId: item.orderId,
+        productId: item.productId,
+        productName: item.productName,
+        productCategory: item.productCategory,
+        quantity: item.quantity,
+        unitPriceCents: item.unitPriceCents,
+        lineTotalCents: item.lineTotalCents,
+      }));
 
-      await this.myOrdersRepository.upsertRagDocument(query, {
-        entityType: 'order',
-        entityId: canceledOrder.id,
-        contentMarkdown: orderMarkdown,
-        embedding: orderEmbedding,
-        sourceUpdatedAt: canceledOrder.updatedAt.toISOString(),
-        metadataJson: {
+      await this.ragSyncService.syncOrder(
+        {
+          id: canceledOrder.id,
           customerId: normalizedCustomerId,
+          status: canceledOrder.status,
           totalAmountCents: canceledOrder.totalAmountCents,
           itemsCount: canceledOrder.itemsCount,
-          status: canceledOrder.status,
-          canceledAt: canceledOrder.updatedAt.toISOString(),
+          shippingCity: canceledOrder.shippingCity,
+          shippingState: canceledOrder.shippingState,
+          updatedAt: canceledOrder.updatedAt.toISOString(),
         },
-      });
+        ragOrderItems,
+        query,
+      );
     });
 
     return {
@@ -274,56 +282,4 @@ export class MyOrdersService {
     };
   }
 
-  // Builds canonical markdown content to index the order update in vector storage.
-  private buildOrderMarkdown(order: OrderSnapshot, items: OrderItemSnapshot[]): string {
-    const lines = [
-      `# Pedido ${order.id}`,
-      '',
-      `**Status:** ${order.status}`,
-      `**Total:** ${this.formatCurrency(order.totalAmountCents)}`,
-      `**Quantidade de itens:** ${order.itemsCount}`,
-      '',
-      '## Endereço de entrega',
-      `- Rua: ${order.shippingStreet}, ${order.shippingStreetNumber}`,
-      `- Bairro: ${order.shippingNeighborhood}`,
-      `- Cidade/UF: ${order.shippingCity}/${order.shippingState}`,
-      `- CEP: ${order.shippingPostalCode}`,
-      `- Complemento: ${order.shippingComplement ?? 'Sem complemento'}`,
-      '',
-      '## Itens',
-      ...items.map(
-        (item) =>
-          `- ${item.productName} | categoria: ${item.productCategory} | quantidade: ${item.quantity} | preço unitário: ${this.formatCurrency(item.unitPriceCents)} | subtotal: ${this.formatCurrency(item.lineTotalCents)}`,
-      ),
-    ];
-
-    return lines.join('\n');
-  }
-
-  // Formats integer cents into a pt-BR currency string.
-  private formatCurrency(valueInCents: number): string {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(valueInCents / 100);
-  }
-
-  // Generates a deterministic fixed-size embedding vector for markdown content.
-  private createEmbedding(content: string): number[] {
-    const vector = new Array<number>(EMBEDDING_DIMENSION).fill(0);
-
-    for (let index = 0; index < content.length; index += 1) {
-      const bucket = index % EMBEDDING_DIMENSION;
-      const charCode = content.charCodeAt(index);
-      vector[bucket] += (charCode % 97) / 97;
-    }
-
-    const magnitude = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
-
-    if (magnitude === 0) {
-      return vector;
-    }
-
-    return vector.map((value) => value / magnitude);
-  }
 }

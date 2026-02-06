@@ -178,8 +178,8 @@ export class CartRepository {
   }
 
   // Persists a snapshot order item with fixed quantity and price.
-  async createOrderItem(query: QueryExecutor, input: CreateOrderItemInput): Promise<void> {
-    await query<QueryResultRow>(
+  async createOrderItem(query: QueryExecutor, input: CreateOrderItemInput): Promise<string> {
+    const rows = await query<QueryResultRow & { id: string }>(
       `
         INSERT INTO order_items (
           order_id,
@@ -191,6 +191,7 @@ export class CartRepository {
           line_total_cents
         )
         VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id
       `,
       [
         input.orderId,
@@ -202,6 +203,8 @@ export class CartRepository {
         input.lineTotalCents,
       ],
     );
+
+    return rows[0].id;
   }
 
   // Decreases stock quantity for a product and confirms the update happened.

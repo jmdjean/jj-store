@@ -1,6 +1,5 @@
 ﻿import { AppError } from '../common/app-error.js';
 import { runInTransaction, type QueryExecutor } from '../config/database.js';
-import { env } from '../config/env.js';
 import {
   AdminRepository,
   type AdminOrderItemSnapshot,
@@ -23,8 +22,8 @@ import type {
   AdminProductSummary,
   UpdateAdminOrderStatusInput,
 } from './admin.types.js';
-
-const EMBEDDING_DIMENSION = env.embeddingDimension;
+import { RagRepository } from '../repositories/rag.repository.js';
+import { RagSyncService, type RagOrderItemSyncInput } from './rag-sync.service.js';
 
 type TransactionRunner = typeof runInTransaction;
 
@@ -61,6 +60,7 @@ export class AdminService {
   constructor(
     private readonly adminRepository: AdminRepository,
     private readonly transactionRunner: TransactionRunner = runInTransaction,
+    private readonly ragSyncService: RagSyncService = new RagSyncService(new RagRepository()),
   ) {}
 
   // Retrieves administrative panel data from the repository.
@@ -148,24 +148,31 @@ export class AdminService {
         },
       });
 
-      const orderMarkdown = this.buildOrderMarkdown(updated, orderItems);
-      const orderEmbedding = this.createEmbedding(orderMarkdown);
+      const ragOrderItems: RagOrderItemSyncInput[] = orderItems.map((item) => ({
+        id: item.id,
+        orderId: item.orderId,
+        productId: item.productId,
+        productName: item.productName,
+        productCategory: item.productCategory,
+        quantity: item.quantity,
+        unitPriceCents: item.unitPriceCents,
+        lineTotalCents: item.lineTotalCents,
+      }));
 
-      await this.adminRepository.upsertRagDocument(query, {
-        entityType: 'order',
-        entityId: updated.id,
-        contentMarkdown: orderMarkdown,
-        embedding: orderEmbedding,
-        sourceUpdatedAt: updated.updatedAt.toISOString(),
-        metadataJson: {
+      await this.ragSyncService.syncOrder(
+        {
+          id: updated.id,
           customerId: updated.customerId,
-          customerName: updated.customerName,
           status: updated.status,
           totalAmountCents: updated.totalAmountCents,
           itemsCount: updated.itemsCount,
+          shippingCity: updated.shippingCity,
+          shippingState: updated.shippingState,
           updatedAt: updated.updatedAt.toISOString(),
         },
-      });
+        ragOrderItems,
+        query,
+      );
 
       return { order: updated, items: orderItems };
     });
@@ -213,7 +220,20 @@ export class AdminService {
         },
       });
 
-      await this.syncProductRag(query, createdProduct);
+      await this.ragSyncService.syncProduct(
+        {
+          id: createdProduct.id,
+          name: createdProduct.name,
+          description: createdProduct.description,
+          category: createdProduct.category,
+          salePriceCents: createdProduct.salePriceCents,
+          weightGrams: createdProduct.weightGrams,
+          stockQuantity: createdProduct.stockQuantity,
+          isActive: createdProduct.isActive,
+          updatedAt: createdProduct.updatedAt.toISOString(),
+        },
+        query,
+      );
 
       return createdProduct;
     });
@@ -280,7 +300,20 @@ export class AdminService {
         },
       });
 
-      await this.syncProductRag(query, product);
+      await this.ragSyncService.syncProduct(
+        {
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          category: product.category,
+          salePriceCents: product.salePriceCents,
+          weightGrams: product.weightGrams,
+          stockQuantity: product.stockQuantity,
+          isActive: product.isActive,
+          updatedAt: product.updatedAt.toISOString(),
+        },
+        query,
+      );
 
       return product;
     });
@@ -315,7 +348,7 @@ export class AdminService {
         },
       });
 
-      await this.adminRepository.deleteRagDocument(query, 'product', product.id);
+      await this.ragSyncService.deleteDocument('product', product.id, query);
     });
 
     return {
@@ -627,77 +660,6 @@ export class AdminService {
       .replace(/^-+|-+$/g, '');
   }
 
-  // Generates markdown, embedding, and metadata for product vector sync.
-  private async syncProductRag(
-    query: QueryExecutor,
-    product: AdminProductSnapshot,
-  ): Promise<void> {
-    const productMarkdown = this.buildProductMarkdown(product);
-    const embedding = this.createEmbedding(productMarkdown);
-
-    await this.adminRepository.upsertRagDocument(query, {
-      entityType: 'product',
-      entityId: product.id,
-      contentMarkdown: productMarkdown,
-      embedding,
-      sourceUpdatedAt: product.updatedAt.toISOString(),
-      metadataJson: {
-        category: product.category,
-        sale_price: product.salePriceCents / 100,
-        weight: product.weightGrams,
-        updated_at: product.updatedAt.toISOString(),
-        is_active: product.isActive,
-      },
-    });
-  }
-
-  // Builds canonical markdown content representing current product state.
-  private buildProductMarkdown(product: AdminProductSnapshot): string {
-    const lines = [
-      `# Produto ${product.name}`,
-      '',
-      `- ID: ${product.id}`,
-      `- Slug: ${product.slug}`,
-      `- Categoria: ${product.category}`,
-      `- Descrição: ${product.description}`,
-      `- Preço de custo: ${this.formatCurrency(product.purchasePriceCents)}`,
-      `- Preço de venda: ${this.formatCurrency(product.salePriceCents)}`,
-      `- Peso (gramas): ${product.weightGrams ?? 0}`,
-      `- Quantidade em estoque: ${product.stockQuantity}`,
-      `- Status: ${product.isActive ? 'ATIVO' : 'INATIVO'}`,
-      `- Imagem: ${product.imageUrl ?? 'Sem imagem'}`,
-    ];
-
-    return lines.join('\n');
-  }
-
-  // Formats integer cents into pt-BR currency representation.
-  private formatCurrency(valueInCents: number): string {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(valueInCents / 100);
-  }
-
-  // Generates a deterministic fixed-size embedding vector for markdown content.
-  private createEmbedding(content: string): number[] {
-    const vector = new Array<number>(EMBEDDING_DIMENSION).fill(0);
-
-    for (let index = 0; index < content.length; index += 1) {
-      const bucket = index % EMBEDDING_DIMENSION;
-      const charCode = content.charCodeAt(index);
-      vector[bucket] += (charCode % 97) / 97;
-    }
-
-    const magnitude = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
-
-    if (magnitude === 0) {
-      return vector;
-    }
-
-    return vector.map((value) => value / magnitude);
-  }
-
 
 
   // Maps order and items snapshots to one API-ready admin order response.
@@ -732,33 +694,6 @@ export class AdminService {
         lineTotalCents: item.lineTotalCents,
       })),
     };
-  }
-
-  // Builds canonical markdown content to index order updates in vector storage.
-  private buildOrderMarkdown(order: AdminOrderSnapshot, items: AdminOrderItemSnapshot[]): string {
-    const lines = [
-      `# Pedido ${order.id}`,
-      '',
-      `**Cliente:** ${order.customerName}`,
-      `**Status:** ${order.status}`,
-      `**Total:** ${this.formatCurrency(order.totalAmountCents)}`,
-      `**Quantidade de itens:** ${order.itemsCount}`,
-      '',
-      '## Endereço de entrega',
-      `- Rua: ${order.shippingStreet}, ${order.shippingStreetNumber}`,
-      `- Bairro: ${order.shippingNeighborhood}`,
-      `- Cidade/UF: ${order.shippingCity}/${order.shippingState}`,
-      `- CEP: ${order.shippingPostalCode}`,
-      `- Complemento: ${order.shippingComplement ?? 'Sem complemento'}`,
-      '',
-      '## Itens',
-      ...items.map(
-        (item) =>
-          `- ${item.productName} | categoria: ${item.productCategory} | quantidade: ${item.quantity} | preço unitário: ${this.formatCurrency(item.unitPriceCents)} | subtotal: ${this.formatCurrency(item.lineTotalCents)}`,
-      ),
-    ];
-
-    return lines.join('\n');
   }
 
 
