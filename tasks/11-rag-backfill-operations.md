@@ -17,35 +17,35 @@ Provide safe operations to populate and maintain vector index for existing and e
 
 ## Task checklist
 ### Initial backfill
-- [ ] Create job/script to reindex existing relational data into `rag_documents`.
-- [ ] Process in batches to avoid overload.
-- [ ] Guarantee idempotency (safe to rerun without duplicates).
-- [ ] Generate final report: processed total, success, failures, elapsed time.
+- [x] Create job/script to reindex existing relational data into `rag_documents`.
+- [x] Process in batches to avoid overload.
+- [x] Guarantee idempotency (safe to rerun without duplicates).
+- [x] Generate final report: processed total, success, failures, elapsed time.
 
 ### Controlled reindexing
-- [ ] Create command to reindex by:
-  - [ ] `entity_type`
-  - [ ] date range
-  - [ ] specific entity (`entity_type` + `entity_id`)
-- [ ] Create `dry-run` mode to estimate volume without writing.
+- [x] Create command to reindex by:
+  - [x] `entity_type`
+  - [x] date range
+  - [x] specific entity (`entity_type` + `entity_id`)
+- [x] Create `dry-run` mode to estimate volume without writing.
 
 ### Operational resilience
-- [ ] Define retry policy for temporary embedding failures.
-- [ ] Define reprocessing queue for permanent failures (dead-letter or dedicated failure log).
-- [ ] Define minimal alerts (example: failure rate over threshold).
+- [x] Define retry policy for temporary embedding failures.
+- [x] Define reprocessing queue for permanent failures (dead-letter or dedicated failure log).
+- [x] Define minimal alerts (example: failure rate over threshold).
 
 ### Documentation
-- [ ] Document runbook:
-  - [ ] how to execute backfill in staging/production
-  - [ ] how to reprocess failures
-  - [ ] how to validate semantic result quality
-- [ ] Document limits/risks (cost, latency, batch size).
+- [x] Document runbook:
+  - [x] how to execute backfill in staging/production
+  - [x] how to reprocess failures
+  - [x] how to validate semantic result quality
+- [x] Document limits/risks (cost, latency, batch size).
 
 ## Acceptance criteria
-- [ ] Legacy data is indexed without duplication.
-- [ ] Partial reindex works as expected.
-- [ ] Operations have enough logs/metrics for support.
-- [ ] Runbook is documented for technical team.
+- [x] Legacy data is indexed without duplication.
+- [x] Partial reindex works as expected.
+- [x] Operations have enough logs/metrics for support.
+- [x] Runbook is documented for technical team.
 
 ## Suggested commit
 - `chore(rag): backfill and vector reindex operations`
