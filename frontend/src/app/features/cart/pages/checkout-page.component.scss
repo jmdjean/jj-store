@@ -1,57 +1,75 @@
-﻿.checkout-page {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 1rem 1rem 3rem;
+.checkout-page {
+  max-width: var(--store-container-max);
+  margin-inline: auto;
+  padding: var(--space-lg) var(--store-container-padding) var(--space-3xl);
 }
 
 .page-header {
-  margin: 1.5rem 0;
+  margin: var(--space-2xl) 0;
 }
 
 .page-header h1 {
   margin: 0;
+  color: var(--color-text-primary);
 }
 
 .page-header p {
-  margin: 0.5rem 0 0;
-  color: #5a5a5a;
+  margin: var(--space-sm) 0 0;
+  color: var(--color-text-secondary);
 }
 
 .checkout-layout {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-2xl);
 }
 
 .address-card,
 .summary-card,
 .state-card {
-  background: #fff;
-  border: 1px solid #ead8c7;
-  border-radius: 14px;
-  padding: 1rem;
+  background: var(--color-surface);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+  box-shadow: var(--card-shadow);
 }
 
 .address-card h2,
 .summary-card h2,
 .state-card h2 {
   margin-top: 0;
+  color: var(--color-text-primary);
+}
+
+.address-card p,
+.summary-card p,
+.state-card p {
+  color: var(--color-text-secondary);
 }
 
 .error {
-  color: #b42318;
+  color: var(--color-error);
 }
 
 .state-card--success {
-  border-color: #84cc16;
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
 }
 
 button {
+  min-height: var(--touch-min);
   border: 0;
-  background: #3f2e1e;
-  color: #fff;
-  border-radius: 10px;
-  padding: 0.65rem 0.9rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border-radius: 0.5rem;
+  padding: var(--space-md) var(--space-xl);
+  font: inherit;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+  }
 }
 
 button[disabled] {
@@ -61,9 +79,14 @@ button[disabled] {
 
 button.ghost {
   background: transparent;
-  border: 1px solid #c89f74;
-  color: #3f2e1e;
-  margin-top: 0.5rem;
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-primary);
+  margin-top: var(--space-sm);
+
+  &:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
 }
 
 @media (min-width: 960px) {

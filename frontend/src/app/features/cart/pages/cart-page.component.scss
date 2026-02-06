@@ -1,37 +1,54 @@
-﻿.cart-page {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 1rem 1rem 3rem;
+.cart-page {
+  max-width: var(--store-container-max);
+  margin-inline: auto;
+  padding: var(--space-lg) var(--store-container-padding) var(--space-3xl);
 }
 
 .page-header {
-  margin: 1.5rem 0;
+  margin: var(--space-2xl) 0;
 }
 
 .page-header h1 {
   margin: 0;
+  color: var(--color-text-primary);
 }
 
 .page-header p {
-  margin-top: 0.5rem;
-  color: #5a5a5a;
+  margin-top: var(--space-sm);
+  color: var(--color-text-secondary);
 }
 
 .state-card {
-  background: #fff;
-  border: 1px solid #ead8c7;
-  border-radius: 14px;
-  padding: 1rem;
-  margin-bottom: 1rem;
+  background: var(--color-surface);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+  margin-bottom: var(--space-lg);
+  box-shadow: var(--card-shadow);
+  color: var(--color-text-secondary);
 }
 
 .state-card button {
-  margin-top: 0.75rem;
+  margin-top: var(--space-md);
+  min-height: var(--touch-min);
+  border: 0;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border-radius: 0.5rem;
+  padding: var(--space-md) var(--space-xl);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: var(--color-primary-hover);
+  }
 }
 
 .cart-layout {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-2xl);
 }
 
 .cart-items {
@@ -39,82 +56,107 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-lg);
 }
 
 .cart-items li {
   display: grid;
   grid-template-columns: 120px 1fr;
-  gap: 1rem;
-  background: #fff;
-  border: 1px solid #ead8c7;
-  border-radius: 14px;
-  padding: 0.75rem;
+  gap: var(--space-xl);
+  background: var(--color-surface);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+  box-shadow: var(--card-shadow);
 }
 
 .cart-items img {
   width: 120px;
   height: 90px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 0.5rem;
+  background: var(--color-surface-elevated);
 }
 
 .item-content h2 {
   margin: 0;
   font-size: 1rem;
+  color: var(--color-text-primary);
 }
 
 .item-content p {
-  margin: 0.35rem 0 0.75rem;
-  color: #5a5a5a;
+  margin: var(--space-xs) 0 var(--space-md);
+  color: var(--color-text-secondary);
 }
 
 .item-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-sm);
 }
 
 .item-actions button {
-  border: 1px solid #c89f74;
-  background: #fff;
-  color: #3f2e1e;
-  border-radius: 10px;
-  min-width: 32px;
-  height: 32px;
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border-radius: 0.5rem;
   cursor: pointer;
+  font: inherit;
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface-elevated);
+  }
 }
 
 .item-actions .ghost {
-  margin-left: 0.75rem;
-  padding: 0 0.75rem;
+  margin-left: var(--space-md);
+  padding: 0 var(--space-lg);
+  min-width: auto;
 }
 
 .summary-card {
-  background: #fff;
-  border: 1px solid #ead8c7;
-  border-radius: 14px;
-  padding: 1rem;
+  background: var(--color-surface);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
   align-self: start;
+  box-shadow: var(--card-shadow);
 }
 
 .summary-card h3 {
   margin-top: 0;
+  color: var(--color-text-primary);
 }
 
-.summary-card button,
-.state-card button {
+.summary-card p {
+  color: var(--color-text-secondary);
+}
+
+.summary-card button {
+  width: 100%;
+  min-height: var(--touch-min);
   border: 0;
-  background: #3f2e1e;
-  color: #fff;
-  border-radius: 10px;
-  padding: 0.65rem 0.9rem;
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
+  border-radius: 0.5rem;
+  padding: var(--space-md) var(--space-xl);
+  font: inherit;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: var(--color-accent-hover);
+  }
 }
 
 @media (min-width: 960px) {
   .cart-layout {
-    grid-template-columns: 1fr 280px;
+    grid-template-columns: 1fr 300px;
     align-items: start;
   }
 }

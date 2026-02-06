@@ -4,38 +4,40 @@
 
 .app-shell {
   min-height: 100dvh;
-  padding: 2rem 1.25rem;
+  padding: var(--space-2xl) var(--store-container-padding);
   background:
-    radial-gradient(circle at 90% 10%, rgba(17, 138, 178, 0.18), transparent 40%),
-    radial-gradient(circle at 10% 90%, rgba(6, 214, 160, 0.2), transparent 35%),
-    #f8fbff;
+    radial-gradient(circle at 90% 10%, rgba(13, 115, 119, 0.12), transparent 40%),
+    radial-gradient(circle at 10% 90%, rgba(13, 148, 136, 0.1), transparent 35%),
+    var(--color-surface-elevated);
 }
 
 .app-header {
   margin-inline: auto;
-  max-width: 860px;
+  max-width: var(--store-container-max);
+  padding-inline: var(--store-container-padding);
 
   .eyebrow {
     margin: 0;
     font-size: 0.8rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #0f6f8f;
+    color: var(--color-primary);
   }
 
   h1 {
-    margin: 0.25rem 0 1rem;
+    margin: var(--space-xs) 0 var(--space-lg);
     font-size: clamp(2rem, 8vw, 3.25rem);
     line-height: 1.05;
+    color: var(--color-text-primary);
   }
 }
 
 .app-content {
   margin-inline: auto;
-  max-width: 860px;
-  border-radius: 1rem;
-  border: 1px solid #d8e6f5;
-  background: #ffffffcf;
-  padding: 1.25rem;
-  box-shadow: 0 16px 48px rgba(16, 47, 72, 0.12);
+  max-width: var(--store-container-max);
+  padding: var(--space-xl) var(--store-container-padding);
+  border-radius: var(--card-radius);
+  border: var(--card-border);
+  background: var(--color-surface);
+  box-shadow: var(--card-shadow);
 }

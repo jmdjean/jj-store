@@ -1,6 +1,61 @@
+/* ==========================================================================
+   JJ Store — Design tokens (e-commerce: trust, clarity, contrast)
+   Use these variables across the public store (catalog, cart, checkout).
+   ========================================================================== */
+
 :root {
+  /* Typography */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #10151c;
+  color: var(--color-text-primary);
+
+  /* Container: max width and lateral spacing */
+  --store-container-max: 1280px;
+  --store-container-padding: clamp(1.25rem, 4vw, 2rem); /* 20px–32px */
+
+  /* Spacing scale (rem) */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.25rem;
+  --space-2xl: 1.5rem;
+  --space-3xl: 2rem;
+
+  /* Primary — brand / main actions */
+  --color-primary: #0d7377;
+  --color-primary-hover: #0a5c5f;
+  --color-primary-foreground: #fff;
+
+  /* Secondary — accent (e.g. “Adicionar ao carrinho”) */
+  --color-accent: #c45c26;
+  --color-accent-hover: #a34a1e;
+  --color-accent-foreground: #fff;
+
+  /* Neutrals — text and surfaces */
+  --color-text-primary: #1a1d21;
+  --color-text-secondary: #4a5568;
+  --color-text-muted: #718096;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+
+  /* Semantic */
+  --color-success: #0d9488;
+  --color-success-bg: #ccfbf1;
+  --color-error: #b91c1c;
+  --color-error-bg: #fee2e2;
+  --color-error-border: #fecaca;
+
+  /* Cards and shadows */
+  --card-border: 1px solid var(--color-border);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --card-radius: 0.75rem;
+  --card-padding: var(--space-xl);
+
+  /* Touch target minimum (a11y) */
+  --touch-min: 44px;
 }
 
 * {
