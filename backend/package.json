@@ -12,6 +12,7 @@
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --config jest.config.mjs"
   },
   "dependencies": {
+    "@types/node": "^22.13.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
@@ -26,7 +27,6 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.13.1",
     "@types/pg": "^8.15.6",
     "eslint": "^9.19.0",
     "globals": "^15.14.0",
