@@ -1,4 +1,5 @@
 import express from 'express';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
@@ -12,6 +13,36 @@ import { errorMiddleware } from './middlewares/error.middleware.js';
 import { env } from './config/env.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const STATIC_EXTENSIONS = new Set([
+  '.js',
+  '.mjs',
+  '.css',
+  '.ico',
+  '.svg',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.webp',
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.eot',
+  '.json',
+]);
+
+function resolveFrontendDist(): string {
+  const fromDirname = path.resolve(__dirname, '..', '..', 'frontend', 'dist', 'frontend', 'browser');
+  if (fs.existsSync(fromDirname)) {
+    return fromDirname;
+  }
+  const fromCwd = path.resolve(process.cwd(), '..', 'frontend', 'dist', 'frontend', 'browser');
+  if (fs.existsSync(fromCwd)) {
+    return fromCwd;
+  }
+  return fromDirname;
+}
 
 export function createApp() {
   const app = express();
@@ -27,11 +58,22 @@ export function createApp() {
   app.use(cartRouter);
 
   if (env.nodeEnv === 'production') {
-    const frontendDist = path.resolve(__dirname, '..', '..', 'frontend', 'dist', 'frontend', 'browser');
-    app.use(express.static(frontendDist));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(frontendDist, 'index.html'));
-    });
+    const frontendDist = resolveFrontendDist();
+    if (!fs.existsSync(frontendDist)) {
+      console.warn(
+        `[frontend] Static directory not found at ${frontendDist}. SPA and static files will not be served.`,
+      );
+    } else {
+      app.use(express.static(frontendDist, { index: false }));
+      app.get('*', (req, res) => {
+        const ext = path.extname(req.path);
+        if (STATIC_EXTENSIONS.has(ext)) {
+          res.status(404).end();
+          return;
+        }
+        res.sendFile(path.join(frontendDist, 'index.html'));
+      });
+    }
   }
 
   app.use(errorMiddleware);
