@@ -1,3 +1,4 @@
+import type { NextFunction, Request, Response } from 'express';
 import { Router } from 'express';
 import { MeController } from '../controllers/me.controller.js';
 import { authGuard } from '../middlewares/auth.guard.js';
@@ -15,22 +16,22 @@ const meController = new MeController(customerProfileService, myOrdersService);
 
 export const meRouter = Router();
 
-meRouter.get('/me/profile', authGuard, roleGuard(['CUSTOMER']), (request, response, next) => {
+meRouter.get('/me/profile', authGuard, roleGuard(['CUSTOMER']), (request: Request, response: Response, next: NextFunction) => {
   meController.getProfile(request, response, next);
 });
 
-meRouter.put('/me/profile', authGuard, roleGuard(['CUSTOMER']), (request, response, next) => {
+meRouter.put('/me/profile', authGuard, roleGuard(['CUSTOMER']), (request: Request, response: Response, next: NextFunction) => {
   meController.updateProfile(request, response, next);
 });
 
-meRouter.get('/me/orders', authGuard, roleGuard(['CUSTOMER']), (request, response, next) => {
+meRouter.get('/me/orders', authGuard, roleGuard(['CUSTOMER']), (request: Request, response: Response, next: NextFunction) => {
   meController.getOrders(request, response, next);
 });
 
-meRouter.get('/me/orders/:id', authGuard, roleGuard(['CUSTOMER']), (request, response, next) => {
+meRouter.get('/me/orders/:id', authGuard, roleGuard(['CUSTOMER']), (request: Request, response: Response, next: NextFunction) => {
   meController.getOrderById(request, response, next);
 });
 
-meRouter.post('/me/orders/:id/cancel', authGuard, roleGuard(['CUSTOMER']), (request, response, next) => {
+meRouter.post('/me/orders/:id/cancel', authGuard, roleGuard(['CUSTOMER']), (request: Request, response: Response, next: NextFunction) => {
   meController.cancelOrder(request, response, next);
 });

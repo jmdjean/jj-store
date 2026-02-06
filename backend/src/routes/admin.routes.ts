@@ -1,3 +1,4 @@
+import type { NextFunction, Request, Response } from 'express';
 import { Router } from 'express';
 import { AdminController } from '../controllers/admin.controller.js';
 import { RagController } from '../controllers/rag.controller.js';
@@ -33,20 +34,20 @@ const agentController = new AgentController(agentRouterService, mcpServerService
 
 export const adminRouter = Router();
 
-adminRouter.get('/admin/painel', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response) => {
+adminRouter.get('/admin/painel', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request: Request, response: Response) => {
   adminController.getPainel(request, response);
 });
 
 
-adminRouter.get('/admin/orders', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response, next) => {
+adminRouter.get('/admin/orders', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request: Request, response: Response, next: NextFunction) => {
   adminController.listOrders(request, response, next);
 });
 
-adminRouter.put('/admin/orders/:id/status', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response, next) => {
+adminRouter.put('/admin/orders/:id/status', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request: Request, response: Response, next: NextFunction) => {
   adminController.updateOrderStatus(request, response, next);
 });
 
-adminRouter.get('/admin/products', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response, next) => {
+adminRouter.get('/admin/products', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request: Request, response: Response, next: NextFunction) => {
   adminController.listProducts(request, response, next);
 });
 
@@ -54,12 +55,12 @@ adminRouter.get(
   '/admin/products/:id',
   authGuard,
   roleGuard(['ADMIN', 'MANAGER']),
-  (request, response, next) => {
+  (request: Request, response: Response, next: NextFunction) => {
     adminController.getProductById(request, response, next);
   },
 );
 
-adminRouter.post('/admin/products', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response, next) => {
+adminRouter.post('/admin/products', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request: Request, response: Response, next: NextFunction) => {
   adminController.createProduct(request, response, next);
 });
 
@@ -67,7 +68,7 @@ adminRouter.put(
   '/admin/products/:id',
   authGuard,
   roleGuard(['ADMIN', 'MANAGER']),
-  (request, response, next) => {
+  (request: Request, response: Response, next: NextFunction) => {
     adminController.updateProduct(request, response, next);
   },
 );
@@ -76,27 +77,27 @@ adminRouter.delete(
   '/admin/products/:id',
   authGuard,
   roleGuard(['ADMIN', 'MANAGER']),
-  (request, response, next) => {
+  (request: Request, response: Response, next: NextFunction) => {
     adminController.deleteProduct(request, response, next);
   },
 );
 
-adminRouter.post('/admin/rag/search', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response, next) => {
+adminRouter.post('/admin/rag/search', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request: Request, response: Response, next: NextFunction) => {
   ragController.search(request, response, next);
 });
 
-adminRouter.post('/admin/rag/backfill', authGuard, roleGuard(['ADMIN']), (request, response, next) => {
+adminRouter.post('/admin/rag/backfill', authGuard, roleGuard(['ADMIN']), (request: Request, response: Response, next: NextFunction) => {
   ragBackfillController.runBackfill(request, response, next);
 });
 
-adminRouter.post('/admin/rag/reprocess-failures', authGuard, roleGuard(['ADMIN']), (request, response, next) => {
+adminRouter.post('/admin/rag/reprocess-failures', authGuard, roleGuard(['ADMIN']), (request: Request, response: Response, next: NextFunction) => {
   ragBackfillController.reprocessFailures(request, response, next);
 });
 
-adminRouter.get('/admin/rag/backfill/failures', authGuard, roleGuard(['ADMIN']), (request, response, next) => {
+adminRouter.get('/admin/rag/backfill/failures', authGuard, roleGuard(['ADMIN']), (request: Request, response: Response, next: NextFunction) => {
   ragBackfillController.listFailures(request, response, next);
 });
 
-adminRouter.post('/admin/agent/ask', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response, next) => {
+adminRouter.post('/admin/agent/ask', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request: Request, response: Response, next: NextFunction) => {
   agentController.ask(request, response, next);
 });

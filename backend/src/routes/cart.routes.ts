@@ -1,4 +1,5 @@
-﻿import { Router } from 'express';
+import type { NextFunction, Request, Response } from 'express';
+import { Router } from 'express';
 import { CartController } from '../controllers/cart.controller.js';
 import { authGuard } from '../middlewares/auth.guard.js';
 import { roleGuard } from '../middlewares/role.guard.js';
@@ -11,6 +12,6 @@ const cartController = new CartController(cartService);
 
 export const cartRouter = Router();
 
-cartRouter.post('/cart/checkout', authGuard, roleGuard(['CUSTOMER']), (request, response, next) => {
+cartRouter.post('/cart/checkout', authGuard, roleGuard(['CUSTOMER']), (request: Request, response: Response, next: NextFunction) => {
   cartController.checkout(request, response, next);
 });

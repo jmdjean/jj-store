@@ -87,28 +87,32 @@ const parseArgs = (argv: string[]): RagBackfillCliOptions => {
     options.entityId = String(map.get('--entity-id'));
   }
 
-  if (typeof map.get('--batch-size') === 'string') {
-    options.batchSize = normalizeNumber(map.get('--batch-size'), defaults.batchSize, 'Batch size inválido.');
+  const batchSizeVal = map.get('--batch-size');
+  if (typeof batchSizeVal === 'string') {
+    options.batchSize = normalizeNumber(batchSizeVal, defaults.batchSize, 'Batch size inválido.');
   }
 
-  if (typeof map.get('--max-attempts') === 'string') {
+  const maxAttemptsVal = map.get('--max-attempts');
+  if (typeof maxAttemptsVal === 'string') {
     options.maxItemAttempts = normalizeNumber(
-      map.get('--max-attempts'),
+      maxAttemptsVal,
       defaults.maxItemAttempts,
       'Número máximo de tentativas inválido.',
     );
   }
 
-  if (typeof map.get('--failure-threshold') === 'string') {
+  const failureThresholdVal = map.get('--failure-threshold');
+  if (typeof failureThresholdVal === 'string') {
     options.failureAlertThreshold = normalizeFloat(
-      map.get('--failure-threshold'),
+      failureThresholdVal,
       defaults.failureAlertThreshold,
       'Limite de falhas inválido.',
     );
   }
 
-  if (typeof map.get('--failure-limit') === 'string') {
-    options.failureLimit = normalizeNumber(map.get('--failure-limit'), 200, 'Limite de falhas inválido.');
+  const failureLimitVal = map.get('--failure-limit');
+  if (typeof failureLimitVal === 'string') {
+    options.failureLimit = normalizeNumber(failureLimitVal, 200, 'Limite de falhas inválido.');
   }
 
   return options;
