@@ -46,4 +46,5 @@ export const env = {
   ragBackfillBatchSize,
   ragBackfillMaxAttempts,
   ragBackfillFailureAlertThreshold,
+  mcpServiceToken: process.env.MCP_SERVICE_TOKEN ?? '',
 };
