@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  /** Use your Render backend URL here when testing locally against the deployed API. */
-  apiBaseUrl: 'http://localhost:3000',
+  /** Backend URL: use a do Render ao testar localmente; use localhost quando o backend rodar na máquina. */
+  apiBaseUrl: 'https://jj-store.onrender.com',
 };
