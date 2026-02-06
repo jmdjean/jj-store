@@ -92,3 +92,39 @@ describe('admin products RBAC', () => {
     });
   });
 });
+
+
+describe('admin orders RBAC', () => {
+  it('retorna 401 no GET /admin/orders sem token', async () => {
+    const app = createApp();
+
+    const response = await request(app).get('/admin/orders');
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
+      mensagem: 'Token de autenticação não informado.',
+    });
+  });
+
+  it('retorna 403 no PUT /admin/orders/:id/status para role CUSTOMER', async () => {
+    const app = createApp();
+    const customerToken = jwt.sign(
+      {
+        sub: 'cliente-1',
+        role: 'CUSTOMER',
+        nomeExibicao: 'Cliente',
+      },
+      env.jwtSecret,
+    );
+
+    const response = await request(app)
+      .put('/admin/orders/pedido-1/status')
+      .set('Authorization', `Bearer ${customerToken}`)
+      .send({ status: 'PAID' });
+
+    expect(response.status).toBe(403);
+    expect(response.body).toEqual({
+      mensagem: 'Você não tem permissão para acessar este recurso.',
+    });
+  });
+});

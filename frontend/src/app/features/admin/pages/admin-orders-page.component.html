@@ -1,0 +1,124 @@
+<section class="orders-page" aria-labelledby="orders-title">
+  <header class="page-header">
+    <div>
+      <h1 id="orders-title">Pedidos</h1>
+      <p>Acompanhe vendas, consulte detalhes e atualize o fluxo de status.</p>
+    </div>
+  </header>
+
+  @if (adminOrdersFacade.successMessage()) {
+    <div class="state-card state-card--success" role="status">{{ adminOrdersFacade.successMessage() }}</div>
+  }
+
+  <form class="filters" [formGroup]="filtersForm" (ngSubmit)="applyFilters()">
+    <label>
+      Cliente
+      <input type="text" formControlName="customer" placeholder="Nome ou e-mail" />
+    </label>
+
+    <label>
+      Status
+      <select formControlName="status">
+        <option value="all">Todos</option>
+        <option value="CREATED">Criado</option>
+        <option value="PAID">Pago</option>
+        <option value="PICKING">Separando</option>
+        <option value="SHIPPED">Enviado</option>
+        <option value="DELIVERED">Entregue</option>
+        <option value="CANCELED">Cancelado</option>
+      </select>
+    </label>
+
+    <label>
+      Data inicial
+      <input type="date" formControlName="fromDate" />
+    </label>
+
+    <label>
+      Data final
+      <input type="date" formControlName="toDate" />
+    </label>
+
+    <div class="filter-actions">
+      <button type="submit" class="primary-button">Filtrar</button>
+      <button type="button" class="secondary-button" (click)="clearFilters()">Limpar</button>
+    </div>
+  </form>
+
+  @if (adminOrdersFacade.loading()) {
+    <div class="state-card" role="status">Carregando pedidos...</div>
+  } @else if (adminOrdersFacade.error()) {
+    <div class="state-card state-card--error" role="alert">{{ adminOrdersFacade.error() }}</div>
+  } @else if (adminOrdersFacade.orders().length === 0) {
+    <div class="state-card" role="status">Nenhum pedido encontrado com os filtros informados.</div>
+  } @else {
+    <ul class="orders-list" aria-label="Lista de pedidos administrativos">
+      @for (order of adminOrdersFacade.orders(); track order.id) {
+        <li class="order-card">
+          <header class="order-card__header">
+            <div>
+              <h2>Pedido {{ order.id }}</h2>
+              <p>{{ order.customerName }} @if (order.customerEmail) { - {{ order.customerEmail }} }</p>
+            </div>
+
+            <span class="status-badge" [class]="'status-badge status-badge--' + adminOrdersFacade.getStatusClass(order.status)">
+              {{ adminOrdersFacade.getStatusLabel(order.status) }}
+            </span>
+          </header>
+
+          <div class="order-meta">
+            <p><strong>Criado em:</strong> {{ formatDate(order.createdAt) }}</p>
+            <p><strong>Atualizado em:</strong> {{ formatDate(order.updatedAt) }}</p>
+            <p><strong>Itens:</strong> {{ order.itemsCount }}</p>
+            <p><strong>Total:</strong> {{ formatCurrency(order.totalAmountCents) }}</p>
+          </div>
+
+          <div class="order-actions">
+            <label>
+              Novo status
+              <select
+                [value]="order.status"
+                [disabled]="adminOrdersFacade.saving() || isSavingOrder(order.id)"
+                (change)="saveStatus(order, $event)"
+              >
+                <option value="CREATED">Criado</option>
+                <option value="PAID">Pago</option>
+                <option value="PICKING">Separando</option>
+                <option value="SHIPPED">Enviado</option>
+                <option value="DELIVERED">Entregue</option>
+                <option value="CANCELED">Cancelado</option>
+              </select>
+            </label>
+
+            <button type="button" class="secondary-button" (click)="toggleOrderDetails(order.id)">
+              {{ isOrderExpanded(order.id) ? 'Ocultar detalhes' : 'Ver detalhes' }}
+            </button>
+          </div>
+
+          @if (isOrderExpanded(order.id)) {
+            <section class="order-details" aria-label="Detalhes do pedido">
+              <h3>Itens do pedido</h3>
+              <ul>
+                @for (item of order.items; track item.id) {
+                  <li>
+                    {{ item.productName }} • {{ item.productCategory }} • Qtd: {{ item.quantity }} •
+                    Unitário: {{ formatCurrency(item.unitPriceCents) }} •
+                    Subtotal: {{ formatCurrency(item.lineTotalCents) }}
+                  </li>
+                }
+              </ul>
+
+              <h3>Endereço de entrega</h3>
+              <p>
+                {{ order.shippingAddress.street }}, {{ order.shippingAddress.streetNumber }} -
+                {{ order.shippingAddress.neighborhood }}
+              </p>
+              <p>{{ order.shippingAddress.city }}/{{ order.shippingAddress.state }} - CEP {{ order.shippingAddress.postalCode }}</p>
+              <p>Complemento: {{ order.shippingAddress.complement || 'Sem complemento' }}</p>
+            </section>
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>

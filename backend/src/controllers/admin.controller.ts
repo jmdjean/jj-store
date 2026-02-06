@@ -1,8 +1,10 @@
 ﻿import type { NextFunction, Request, Response } from 'express';
 import { AdminService } from '../services/admin.service.js';
 import type {
+  AdminOrdersFiltersInput,
   AdminProductPayloadInput,
   AdminProductsFiltersInput,
+  UpdateAdminOrderStatusInput,
 } from '../services/admin.types.js';
 
 export class AdminController {
@@ -12,6 +14,40 @@ export class AdminController {
   getPainel(_request: Request, response: Response): void {
     response.status(200).json(this.adminService.getPainelData());
   }
+
+
+
+  // Handles admin order listing with optional status/date/customer filters.
+  async listOrders(request: Request, response: Response, next: NextFunction): Promise<void> {
+    try {
+      const filters: AdminOrdersFiltersInput = {
+        status: this.readQueryValue(request.query.status),
+        customer: this.readQueryValue(request.query.customer),
+        fromDate: this.readQueryValue(request.query.fromDate),
+        toDate: this.readQueryValue(request.query.toDate),
+      };
+
+      const result = await this.adminService.listOrders(filters);
+      response.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Handles admin order status updates for the informed order ID.
+  async updateOrderStatus(request: Request, response: Response, next: NextFunction): Promise<void> {
+    try {
+      const actorUserId = request.authUser?.id ?? '';
+      const orderId = this.readRouteParam(request.params.id);
+      const payload = request.body as UpdateAdminOrderStatusInput;
+      const result = await this.adminService.updateOrderStatus(actorUserId, orderId, payload);
+
+      response.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
 
   // Handles admin product listing with optional search filters.
   async listProducts(request: Request, response: Response, next: NextFunction): Promise<void> {
