@@ -11,6 +11,23 @@ const embeddingsTimeoutMs =
 const embeddingsRetryValue = Number(process.env.EMBEDDINGS_RETRY_COUNT ?? 3);
 const embeddingsRetryCount =
   Number.isFinite(embeddingsRetryValue) && embeddingsRetryValue > 0 ? embeddingsRetryValue : 3;
+const ragBackfillBatchSizeValue = Number(process.env.RAG_BACKFILL_BATCH_SIZE ?? 50);
+const ragBackfillBatchSize =
+  Number.isFinite(ragBackfillBatchSizeValue) && ragBackfillBatchSizeValue > 0
+    ? ragBackfillBatchSizeValue
+    : 50;
+const ragBackfillMaxAttemptsValue = Number(process.env.RAG_BACKFILL_MAX_ATTEMPTS ?? 3);
+const ragBackfillMaxAttempts =
+  Number.isFinite(ragBackfillMaxAttemptsValue) && ragBackfillMaxAttemptsValue > 0
+    ? ragBackfillMaxAttemptsValue
+    : 3;
+const ragBackfillFailureAlertThresholdValue = Number(
+  process.env.RAG_BACKFILL_FAILURE_ALERT_THRESHOLD ?? 0.2,
+);
+const ragBackfillFailureAlertThreshold =
+  Number.isFinite(ragBackfillFailureAlertThresholdValue) && ragBackfillFailureAlertThresholdValue >= 0
+    ? ragBackfillFailureAlertThresholdValue
+    : 0.2;
 
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? 'development',
@@ -26,4 +43,7 @@ export const env = {
   embeddingsTimeoutMs,
   embeddingsRetryCount,
   embeddingDimension,
+  ragBackfillBatchSize,
+  ragBackfillMaxAttempts,
+  ragBackfillFailureAlertThreshold,
 };
