@@ -1,7 +1,8 @@
-﻿import type { QueryExecutor } from '../src/config/database.js';
+import type { QueryExecutor } from '../src/config/database.js';
 import { AppError } from '../src/common/app-error.js';
 import { AdminService } from '../src/services/admin.service.js';
 import type { AdminRepository, AdminProductSnapshot } from '../src/repositories/admin.repository.js';
+import type { RagSyncService } from '../src/services/rag-sync.service.js';
 
 const baseProduct: AdminProductSnapshot = {
   id: 'produto-1',
@@ -43,8 +44,6 @@ describe('AdminService', () => {
       | 'updateProduct'
       | 'deactivateProduct'
       | 'insertAuditLog'
-      | 'upsertRagDocument'
-      | 'deleteRagDocument'
     > = {
       getPainelData: () => ({ mensagem: 'ok' }),
       listProducts: async () => [],
@@ -56,13 +55,26 @@ describe('AdminService', () => {
       insertAuditLog: async () => {
         auditLogCalls += 1;
       },
-      upsertRagDocument: async () => {
-        upsertRagCalls += 1;
-      },
-      deleteRagDocument: async () => undefined,
     };
 
-    const service = new AdminService(repository as AdminRepository, createTransactionRunner() as never);
+    const ragSyncService: RagSyncService = {
+      syncProduct: async () => {
+        upsertRagCalls += 1;
+      },
+      deleteDocument: async () => undefined,
+      syncOrder: async () => undefined,
+      syncOrderItem: async () => undefined,
+      syncCustomer: async () => undefined,
+      syncManager: async () => undefined,
+      upsertDocument: async () => undefined,
+      search: async () => ({ mensagem: 'ok', resultados: [] }),
+    } as RagSyncService;
+
+    const service = new AdminService(
+      repository as AdminRepository,
+      createTransactionRunner() as never,
+      ragSyncService,
+    );
 
     const response = await service.createProduct('admin-1', {
       name: 'Cafeteira Prime',
@@ -92,8 +104,6 @@ describe('AdminService', () => {
       | 'updateProduct'
       | 'deactivateProduct'
       | 'insertAuditLog'
-      | 'upsertRagDocument'
-      | 'deleteRagDocument'
     > = {
       getPainelData: () => ({ mensagem: 'ok' }),
       listProducts: async () => [],
@@ -103,11 +113,24 @@ describe('AdminService', () => {
       updateProduct: async () => null,
       deactivateProduct: async () => null,
       insertAuditLog: async () => undefined,
-      upsertRagDocument: async () => undefined,
-      deleteRagDocument: async () => undefined,
     };
 
-    const service = new AdminService(repository as AdminRepository, createTransactionRunner() as never);
+    const ragSyncService: RagSyncService = {
+      syncProduct: async () => undefined,
+      deleteDocument: async () => undefined,
+      syncOrder: async () => undefined,
+      syncOrderItem: async () => undefined,
+      syncCustomer: async () => undefined,
+      syncManager: async () => undefined,
+      upsertDocument: async () => undefined,
+      search: async () => ({ mensagem: 'ok', resultados: [] }),
+    } as RagSyncService;
+
+    const service = new AdminService(
+      repository as AdminRepository,
+      createTransactionRunner() as never,
+      ragSyncService,
+    );
 
     await expect(
       service.createProduct('admin-1', {
@@ -137,8 +160,6 @@ describe('AdminService', () => {
       | 'updateProduct'
       | 'deactivateProduct'
       | 'insertAuditLog'
-      | 'upsertRagDocument'
-      | 'deleteRagDocument'
     > = {
       getPainelData: () => ({ mensagem: 'ok' }),
       listProducts: async () => [],
@@ -148,11 +169,24 @@ describe('AdminService', () => {
       updateProduct: async () => null,
       deactivateProduct: async () => null,
       insertAuditLog: async () => undefined,
-      upsertRagDocument: async () => undefined,
-      deleteRagDocument: async () => undefined,
     };
 
-    const service = new AdminService(repository as AdminRepository, createTransactionRunner() as never);
+    const ragSyncService: RagSyncService = {
+      syncProduct: async () => undefined,
+      deleteDocument: async () => undefined,
+      syncOrder: async () => undefined,
+      syncOrderItem: async () => undefined,
+      syncCustomer: async () => undefined,
+      syncManager: async () => undefined,
+      upsertDocument: async () => undefined,
+      search: async () => ({ mensagem: 'ok', resultados: [] }),
+    } as RagSyncService;
+
+    const service = new AdminService(
+      repository as AdminRepository,
+      createTransactionRunner() as never,
+      ragSyncService,
+    );
 
     await expect(
       service.updateProduct('admin-1', 'produto-1', {

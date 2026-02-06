@@ -1,13 +1,19 @@
 import { Router } from 'express';
 import { AdminController } from '../controllers/admin.controller.js';
+import { RagController } from '../controllers/rag.controller.js';
 import { AdminService } from '../services/admin.service.js';
 import { AdminRepository } from '../repositories/admin.repository.js';
+import { RagRepository } from '../repositories/rag.repository.js';
+import { RagSyncService } from '../services/rag-sync.service.js';
 import { authGuard } from '../middlewares/auth.guard.js';
 import { roleGuard } from '../middlewares/role.guard.js';
 
 const adminRepository = new AdminRepository();
 const adminService = new AdminService(adminRepository);
 const adminController = new AdminController(adminService);
+const ragRepository = new RagRepository();
+const ragSyncService = new RagSyncService(ragRepository);
+const ragController = new RagController(ragSyncService);
 
 export const adminRouter = Router();
 
@@ -58,3 +64,7 @@ adminRouter.delete(
     adminController.deleteProduct(request, response, next);
   },
 );
+
+adminRouter.post('/admin/rag/search', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response, next) => {
+  ragController.search(request, response, next);
+});

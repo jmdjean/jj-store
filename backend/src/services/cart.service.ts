@@ -1,6 +1,7 @@
 ﻿import { AppError } from '../common/app-error.js';
 import { runInTransaction } from '../config/database.js';
-import { env } from '../config/env.js';
+import { RagSyncService, type RagOrderItemSyncInput } from './rag-sync.service.js';
+import { RagRepository } from '../repositories/rag.repository.js';
 import {
   CartRepository,
   type CheckoutProductSnapshot,
@@ -21,14 +22,13 @@ type PlannedOrderItem = {
   unitPriceCents: number;
   lineTotalCents: number;
 };
-
-const EMBEDDING_DIMENSION = env.embeddingDimension;
 type TransactionRunner = typeof runInTransaction;
 
 export class CartService {
   constructor(
     private readonly cartRepository: CartRepository,
     private readonly transactionRunner: TransactionRunner = runInTransaction,
+    private readonly ragSyncService: RagSyncService = new RagSyncService(new RagRepository()),
   ) {}
 
   // Creates an order transaction, decrements stock, and upserts vector document.
@@ -58,14 +58,27 @@ export class CartService {
         address: shippingAddress,
       });
 
+      const ragOrderItems: RagOrderItemSyncInput[] = [];
+
       for (const item of plannedItems) {
-        await this.cartRepository.createOrderItem(query, {
+        const orderItemId = await this.cartRepository.createOrderItem(query, {
           orderId,
           productId: item.productId,
           productName: item.productName,
           productCategory: item.productCategory,
           unitPriceCents: item.unitPriceCents,
           quantity: item.quantity,
+          lineTotalCents: item.lineTotalCents,
+        });
+
+        ragOrderItems.push({
+          id: orderItemId,
+          orderId,
+          productId: item.productId,
+          productName: item.productName,
+          productCategory: item.productCategory,
+          quantity: item.quantity,
+          unitPriceCents: item.unitPriceCents,
           lineTotalCents: item.lineTotalCents,
         });
 
@@ -80,22 +93,26 @@ export class CartService {
         }
       }
 
-      const orderMarkdown = this.buildOrderMarkdown(orderId, shippingAddress, plannedItems, totalAmountCents);
-      const orderEmbedding = this.createEmbedding(orderMarkdown);
+      const orderUpdatedAt = new Date().toISOString();
 
-      await this.cartRepository.upsertRagDocument(query, {
-        entityType: 'order',
-        entityId: orderId,
-        contentMarkdown: orderMarkdown,
-        embedding: orderEmbedding,
-        sourceUpdatedAt: new Date().toISOString(),
-        metadataJson: {
+      await this.ragSyncService.syncOrder(
+        {
+          id: orderId,
           customerId: normalizedCustomerId,
+          status: 'CREATED',
           totalAmountCents,
           itemsCount: plannedItems.length,
-          status: 'CREATED',
+          shippingCity: shippingAddress.city,
+          shippingState: shippingAddress.state,
+          updatedAt: orderUpdatedAt,
         },
-      });
+        ragOrderItems,
+        query,
+      );
+
+      await Promise.all(
+        ragOrderItems.map((item) => this.ragSyncService.syncOrderItem(item, query)),
+      );
 
       return orderId;
     });
@@ -249,60 +266,4 @@ export class CartService {
     return normalizedValue || null;
   }
 
-  // Builds canonical markdown content to index the order in the vector layer.
-  private buildOrderMarkdown(
-    orderId: string,
-    address: CustomerAddressSnapshot,
-    items: PlannedOrderItem[],
-    totalAmountCents: number,
-  ): string {
-    const lines = [
-      `# Pedido ${orderId}`,
-      '',
-      '## Endereço de entrega',
-      `- Rua: ${address.street}, ${address.streetNumber}`,
-      `- Bairro: ${address.neighborhood}`,
-      `- Cidade/UF: ${address.city}/${address.state}`,
-      `- CEP: ${address.postalCode}`,
-      `- Complemento: ${address.complement ?? 'Sem complemento'}`,
-      '',
-      '## Itens',
-      ...items.map(
-        (item) =>
-          `- ${item.productName} | categoria: ${item.productCategory} | quantidade: ${item.quantity} | preço unitário: ${this.formatCurrency(item.unitPriceCents)} | subtotal: ${this.formatCurrency(item.lineTotalCents)}`,
-      ),
-      '',
-      `**Total:** ${this.formatCurrency(totalAmountCents)}`,
-      '**Status:** CREATED',
-    ];
-
-    return lines.join('\n');
-  }
-
-  // Formats integer cents into pt-BR currency string for markdown snapshots.
-  private formatCurrency(valueInCents: number): string {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(valueInCents / 100);
-  }
-
-  // Generates a deterministic fixed-size embedding vector for markdown content.
-  private createEmbedding(content: string): number[] {
-    const vector = new Array<number>(EMBEDDING_DIMENSION).fill(0);
-
-    for (let index = 0; index < content.length; index += 1) {
-      const bucket = index % EMBEDDING_DIMENSION;
-      const charCode = content.charCodeAt(index);
-      vector[bucket] += (charCode % 97) / 97;
-    }
-
-    const magnitude = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
-
-    if (magnitude === 0) {
-      return vector;
-    }
-
-    return vector.map((value) => value / magnitude);
-  }
 }

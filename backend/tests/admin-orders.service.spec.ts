@@ -6,6 +6,7 @@ import type {
   AdminOrderSnapshot,
   AdminRepository,
 } from '../src/repositories/admin.repository.js';
+import type { RagSyncService } from '../src/services/rag-sync.service.js';
 
 const baseOrder: AdminOrderSnapshot = {
   id: 'pedido-1',
@@ -64,7 +65,6 @@ describe('AdminService orders', () => {
       },
       updateProduct: async () => null,
       deactivateProduct: async () => null,
-      deleteRagDocument: async () => undefined,
       listOrders: async () => [baseOrder],
       listOrderItemsByOrderIds: async () => baseOrderItems,
       findOrderById: async () => baseOrder,
@@ -73,12 +73,26 @@ describe('AdminService orders', () => {
       insertAuditLog: async () => {
         auditLogCalls += 1;
       },
-      upsertRagDocument: async () => {
-        upsertRagCalls += 1;
-      },
     };
 
-    const service = new AdminService(repository as AdminRepository, createTransactionRunner() as never);
+    const ragSyncService: RagSyncService = {
+      syncOrder: async () => {
+        upsertRagCalls += 1;
+      },
+      syncProduct: async () => undefined,
+      syncOrderItem: async () => undefined,
+      syncCustomer: async () => undefined,
+      syncManager: async () => undefined,
+      deleteDocument: async () => undefined,
+      upsertDocument: async () => undefined,
+      search: async () => ({ mensagem: 'ok', resultados: [] }),
+    } as RagSyncService;
+
+    const service = new AdminService(
+      repository as AdminRepository,
+      createTransactionRunner() as never,
+      ragSyncService,
+    );
 
     const response = await service.updateOrderStatus('admin-1', 'pedido-1', {
       status: 'PICKING',
@@ -101,17 +115,30 @@ describe('AdminService orders', () => {
       },
       updateProduct: async () => null,
       deactivateProduct: async () => null,
-      deleteRagDocument: async () => undefined,
       listOrders: async () => [baseOrder],
       listOrderItemsByOrderIds: async () => baseOrderItems,
       findOrderById: async () => ({ ...baseOrder, status: 'DELIVERED' }),
       listOrderItems: async () => baseOrderItems,
       updateOrderStatus: async () => ({ ...baseOrder, status: 'CANCELED' }),
       insertAuditLog: async () => undefined,
-      upsertRagDocument: async () => undefined,
     };
 
-    const service = new AdminService(repository as AdminRepository, createTransactionRunner() as never);
+    const ragSyncService: RagSyncService = {
+      syncOrder: async () => undefined,
+      syncProduct: async () => undefined,
+      syncOrderItem: async () => undefined,
+      syncCustomer: async () => undefined,
+      syncManager: async () => undefined,
+      deleteDocument: async () => undefined,
+      upsertDocument: async () => undefined,
+      search: async () => ({ mensagem: 'ok', resultados: [] }),
+    } as RagSyncService;
+
+    const service = new AdminService(
+      repository as AdminRepository,
+      createTransactionRunner() as never,
+      ragSyncService,
+    );
 
     await expect(
       service.updateOrderStatus('admin-1', 'pedido-1', {
