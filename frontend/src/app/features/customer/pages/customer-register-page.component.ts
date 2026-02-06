@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CustomerProfileFacade } from '../facade/customer-profile.facade';
 import type { RegisterCustomerPayload } from '../models/customer-profile.models';
 
@@ -14,6 +14,8 @@ import type { RegisterCustomerPayload } from '../models/customer-profile.models'
 })
 export class CustomerRegisterPageComponent {
   private readonly formBuilder = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   protected readonly facade = inject(CustomerProfileFacade);
 
   protected readonly registerForm = this.formBuilder.nonNullable.group({
@@ -43,12 +45,24 @@ export class CustomerRegisterPageComponent {
     const payload = this.toRegisterPayload();
 
     this.facade.registerCustomer(payload).subscribe({
+      next: () => {
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/checkout';
+        void this.router.navigate(['/login'], {
+          queryParams: { returnUrl, registered: 'true' },
+        });
+      },
       error: (error: unknown) => {
         this.facade.registerError.set(
           this.facade.getApiErrorMessage(error, 'Não foi possível concluir o cadastro agora.'),
         );
       },
     });
+  }
+
+  // Returns query params to preserve returnUrl when navigating back to login.
+  protected get loginQueryParams(): { returnUrl?: string } {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    return returnUrl ? { returnUrl } : {};
   }
 
   // Checks whether a specific form control should display an error.

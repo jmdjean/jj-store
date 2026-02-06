@@ -63,6 +63,15 @@ button[disabled] {
   margin-top: 0.4rem;
 }
 
+.toast.success {
+  margin: 0 0 0.5rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.5rem;
+  background: #e6f4ea;
+  color: #1e7e34;
+  font-size: 0.9rem;
+}
+
 .cadastro-link {
   margin-top: 0.6rem;
 

@@ -1,4 +1,4 @@
-﻿<section class="checkout-page">
+<section class="checkout-page">
   <app-store-header
     [searchValue]="''"
     [cartItems]="cartFacade.totalItems()"
@@ -20,7 +20,10 @@
       <h2>Pedido confirmado</h2>
       <p>{{ cartFacade.checkoutMessage() }}</p>
       <p><strong>Número do pedido:</strong> {{ cartFacade.checkoutOrderId() }}</p>
-      <button type="button" (click)="goToCatalog()">Voltar ao catálogo</button>
+      <div class="success-actions">
+        <a routerLink="/minhas-compras" class="button primary">Ver meus pedidos</a>
+        <button type="button" (click)="goToCatalog()">Voltar ao catálogo</button>
+      </div>
     </div>
   } @else {
     <div class="checkout-layout">

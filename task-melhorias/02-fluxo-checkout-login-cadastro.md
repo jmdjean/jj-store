@@ -53,32 +53,32 @@ Garantir que, ao clicar em **"Comprar"** (ou equivalente) a partir do carrinho, 
 
 ### Frontend — Navegação e guards
 
-- [ ] Rota de checkout protegida por authGuard (apenas usuário autenticado).
-- [ ] Ao acessar checkout sem login: redirecionar para login (ou cadastro) com `returnUrl` (ex.: `/checkout` ou `/carrinho/checkout`).
-- [ ] Botão "Comprar" no carrinho leva à rota de checkout (que por sua vez dispara o redirect para login se necessário).
+- [x] Rota de checkout protegida por authGuard (apenas usuário autenticado).
+- [x] Ao acessar checkout sem login: redirecionar para login (ou cadastro) com `returnUrl` (ex.: `/checkout` ou `/carrinho/checkout`).
+- [x] Botão "Comprar" no carrinho leva à rota de checkout (que por sua vez dispara o redirect para login se necessário).
 
 ### Frontend — Login e cadastro
 
-- [ ] Tela de login com redirecionamento pós-sucesso para `returnUrl` quando existir.
-- [ ] Fluxo de cadastro disponível (nova conta CUSTOMER); após sucesso, redirecionar para `returnUrl` ou para login com mensagem em pt-BR.
-- [ ] Mensagens de sucesso/erro em pt-BR (ex.: "Não foi possível fazer login", "Preencha todos os campos").
+- [x] Tela de login com redirecionamento pós-sucesso para `returnUrl` quando existir.
+- [x] Fluxo de cadastro disponível (nova conta CUSTOMER); após sucesso, redirecionar para `returnUrl` ou para login com mensagem em pt-BR.
+- [x] Mensagens de sucesso/erro em pt-BR (ex.: "Não foi possível fazer login", "Preencha todos os campos").
 
 ### Frontend — Checkout
 
-- [ ] Usuário logado que acessa checkout vê resumo do carrinho e pode confirmar endereço e finalizar.
-- [ ] Após finalizar, mensagem de sucesso em pt-BR e redirecionamento adequado (ex.: "Meus pedidos" ou home).
+- [x] Usuário logado que acessa checkout vê resumo do carrinho e pode confirmar endereço e finalizar.
+- [x] Após finalizar, mensagem de sucesso em pt-BR e redirecionamento adequado (ex.: "Meus pedidos" ou home).
 
 ### Backend (verificação)
 
-- [ ] Endpoint de checkout cria pedido e itens e decrementa estoque em transação (já existente; apenas validar).
-- [ ] Respostas de erro do checkout em pt-BR (ex.: "Estoque insuficiente para o produto X").
+- [x] Endpoint de checkout cria pedido e itens e decrementa estoque em transação (já existente; apenas validar).
+- [x] Respostas de erro do checkout em pt-BR (ex.: "Estoque insuficiente para o produto X").
 
 ## Critérios de aceite
 
-- [ ] Usuário não logado que clica em "Comprar" no carrinho é levado à tela de login/cadastro.
-- [ ] Após login ou cadastro, o usuário é redirecionado ao checkout e consegue finalizar a compra.
-- [ ] Pedido é criado corretamente; estoque é atualizado; mensagens ao usuário em pt-BR.
-- [ ] Nenhum fluxo quebrado para usuário já logado (acesso direto ao checkout continua funcionando).
+- [x] Usuário não logado que clica em "Comprar" no carrinho é levado à tela de login/cadastro.
+- [x] Após login ou cadastro, o usuário é redirecionado ao checkout e consegue finalizar a compra.
+- [x] Pedido é criado corretamente; estoque é atualizado; mensagens ao usuário em pt-BR.
+- [x] Nenhum fluxo quebrado para usuário já logado (acesso direto ao checkout continua funcionando).
 
 ## Referências
 

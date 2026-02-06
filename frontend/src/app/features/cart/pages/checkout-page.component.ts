@@ -1,12 +1,12 @@
-﻿import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { StoreHeaderComponent } from '../../catalog/components/store-header/store-header.component';
 import { CartFacade } from '../facade/cart.facade';
 
 @Component({
   selector: 'app-checkout-page',
   standalone: true,
-  imports: [StoreHeaderComponent],
+  imports: [StoreHeaderComponent, RouterLink],
   templateUrl: './checkout-page.component.html',
   styleUrl: './checkout-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -81,7 +81,7 @@
       <button type="submit" [disabled]="facade.registerLoading()">
         {{ facade.registerLoading() ? 'Salvando cadastro...' : 'Concluir cadastro' }}
       </button>
-      <a routerLink="/login">Já tenho conta</a>
+      <a [routerLink]="['/login']" [queryParams]="loginQueryParams">Já tenho conta</a>
     </div>
   </form>
 </section>

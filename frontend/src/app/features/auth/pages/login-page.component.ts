@@ -73,6 +73,17 @@ export class LoginPageComponent {
     return control.invalid && (control.touched || control.dirty);
   }
 
+  // Returns query params to preserve returnUrl when navigating to signup.
+  protected get cadastroQueryParams(): { returnUrl?: string } {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    return returnUrl ? { returnUrl } : {};
+  }
+
+  // Indicates whether to show the post-registration success message.
+  protected get showRegisteredMessage(): boolean {
+    return this.route.snapshot.queryParamMap.get('registered') === 'true';
+  }
+
   // Resolves the best API error message for login failures.
   private resolveApiErrorMessage(error: unknown): string {
     if (!(error instanceof HttpErrorResponse)) {

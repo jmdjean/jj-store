@@ -37,9 +37,13 @@
       {{ carregando() ? 'Entrando...' : 'Entrar' }}
     </button>
 
+    @if (showRegisteredMessage) {
+      <p class="toast success" role="status">Conta criada. Faça login para continuar.</p>
+    }
+
     <p class="cadastro-link">
       Ainda não tem conta?
-      <a routerLink="/cadastro">Cadastre-se</a>
+      <a [routerLink]="['/cadastro']" [queryParams]="cadastroQueryParams">Cadastre-se</a>
     </p>
   </form>
 </section>
