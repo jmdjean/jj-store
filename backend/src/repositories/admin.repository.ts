@@ -1,5 +1,6 @@
 ﻿import type { QueryResultRow } from 'pg';
 import { runQuery, type QueryExecutor } from '../config/database.js';
+import type { AdminOrderStatus } from '../services/admin.types.js';
 
 export type AdminPainelData = {
   mensagem: string;
@@ -41,6 +42,77 @@ export type AdminProductsQueryInput = {
   q: string | null;
   category: string | null;
   status: 'active' | 'inactive' | 'all';
+};
+
+
+
+type AdminOrderDatabaseRecord = {
+  id: string;
+  customer_id: string;
+  customer_name: string | null;
+  customer_email: string | null;
+  status: AdminOrderStatus;
+  currency_code: string;
+  total_amount_cents: number;
+  items_count: number;
+  shipping_street: string;
+  shipping_street_number: string;
+  shipping_neighborhood: string;
+  shipping_city: string;
+  shipping_state: string;
+  shipping_postal_code: string;
+  shipping_complement: string | null;
+  created_at: string | Date;
+  updated_at: string | Date;
+};
+
+type AdminOrderItemDatabaseRecord = {
+  id: string;
+  order_id: string;
+  product_id: string;
+  product_name: string;
+  product_category: string;
+  unit_price_cents: number;
+  quantity: number;
+  line_total_cents: number;
+};
+
+export type AdminOrderItemSnapshot = {
+  id: string;
+  orderId: string;
+  productId: string;
+  productName: string;
+  productCategory: string;
+  unitPriceCents: number;
+  quantity: number;
+  lineTotalCents: number;
+};
+
+export type AdminOrderSnapshot = {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerEmail: string | null;
+  status: AdminOrderStatus;
+  currencyCode: string;
+  totalAmountCents: number;
+  itemsCount: number;
+  shippingStreet: string;
+  shippingStreetNumber: string;
+  shippingNeighborhood: string;
+  shippingCity: string;
+  shippingState: string;
+  shippingPostalCode: string;
+  shippingComplement: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type AdminOrdersQueryInput = {
+  status: AdminOrderStatus | 'all';
+  customer: string | null;
+  fromDate: string | null;
+  toDate: string | null;
 };
 
 export type CreateAdminProductInput = {
@@ -300,6 +372,168 @@ export class AdminRepository {
     return rows.length > 0;
   }
 
+
+
+  // Lists orders with optional status, date range, and customer filters.
+  async listOrders(input: AdminOrdersQueryInput): Promise<AdminOrderSnapshot[]> {
+    const rows = await runQuery<AdminOrderDatabaseRecord>(
+      `
+        SELECT
+          o.id,
+          o.customer_id,
+          cp.full_name AS customer_name,
+          u.email AS customer_email,
+          o.status,
+          o.currency_code,
+          o.total_amount_cents,
+          o.items_count,
+          o.shipping_street,
+          o.shipping_street_number,
+          o.shipping_neighborhood,
+          o.shipping_city,
+          o.shipping_state,
+          o.shipping_postal_code,
+          o.shipping_complement,
+          o.created_at,
+          o.updated_at
+        FROM orders o
+        INNER JOIN users u ON u.id = o.customer_id
+        LEFT JOIN customers_profile cp ON cp.user_id = o.customer_id
+        WHERE
+          ($1::text = 'all' OR o.status = $1::order_status)
+          AND ($2::text IS NULL OR cp.full_name ILIKE '%' || $2 || '%' OR u.email ILIKE '%' || $2 || '%')
+          AND ($3::date IS NULL OR o.created_at::date >= $3::date)
+          AND ($4::date IS NULL OR o.created_at::date <= $4::date)
+        ORDER BY o.created_at DESC
+      `,
+      [input.status, input.customer, input.fromDate, input.toDate],
+    );
+
+    return rows.map((row) => this.mapOrder(row));
+  }
+
+  // Loads all snapshot items for each order ID in a single query.
+  async listOrderItemsByOrderIds(orderIds: string[]): Promise<AdminOrderItemSnapshot[]> {
+    if (orderIds.length === 0) {
+      return [];
+    }
+
+    const rows = await runQuery<AdminOrderItemDatabaseRecord>(
+      `
+        SELECT
+          id,
+          order_id,
+          product_id,
+          product_name,
+          product_category,
+          unit_price_cents,
+          quantity,
+          line_total_cents
+        FROM order_items
+        WHERE order_id = ANY($1::uuid[])
+        ORDER BY created_at ASC
+      `,
+      [orderIds],
+    );
+
+    return rows.map((row) => this.mapOrderItem(row));
+  }
+
+  // Finds one order by identifier inside the current transaction.
+  async findOrderById(query: QueryExecutor, orderId: string, lockForUpdate = false): Promise<AdminOrderSnapshot | null> {
+    const lockClause = lockForUpdate ? 'FOR UPDATE' : '';
+    const rows = await query<AdminOrderDatabaseRecord>(
+      `
+        SELECT
+          o.id,
+          o.customer_id,
+          cp.full_name AS customer_name,
+          u.email AS customer_email,
+          o.status,
+          o.currency_code,
+          o.total_amount_cents,
+          o.items_count,
+          o.shipping_street,
+          o.shipping_street_number,
+          o.shipping_neighborhood,
+          o.shipping_city,
+          o.shipping_state,
+          o.shipping_postal_code,
+          o.shipping_complement,
+          o.created_at,
+          o.updated_at
+        FROM orders o
+        INNER JOIN users u ON u.id = o.customer_id
+        LEFT JOIN customers_profile cp ON cp.user_id = o.customer_id
+        WHERE o.id = $1
+        ${lockClause}
+        LIMIT 1
+      `,
+      [orderId],
+    );
+
+    const row = rows[0];
+    return row ? this.mapOrder(row) : null;
+  }
+
+  // Loads all snapshot items from the provided order ID in transaction scope.
+  async listOrderItems(query: QueryExecutor, orderId: string): Promise<AdminOrderItemSnapshot[]> {
+    const rows = await query<AdminOrderItemDatabaseRecord>(
+      `
+        SELECT
+          id,
+          order_id,
+          product_id,
+          product_name,
+          product_category,
+          unit_price_cents,
+          quantity,
+          line_total_cents
+        FROM order_items
+        WHERE order_id = $1
+        ORDER BY created_at ASC
+      `,
+      [orderId],
+    );
+
+    return rows.map((row) => this.mapOrderItem(row));
+  }
+
+  // Updates order status and returns the refreshed order snapshot.
+  async updateOrderStatus(query: QueryExecutor, orderId: string, status: AdminOrderStatus): Promise<AdminOrderSnapshot> {
+    const rows = await query<AdminOrderDatabaseRecord>(
+      `
+        UPDATE orders o
+        SET status = $2, updated_at = NOW()
+        FROM users u
+        LEFT JOIN customers_profile cp ON cp.user_id = u.id
+        WHERE o.id = $1
+          AND u.id = o.customer_id
+        RETURNING
+          o.id,
+          o.customer_id,
+          cp.full_name AS customer_name,
+          u.email AS customer_email,
+          o.status,
+          o.currency_code,
+          o.total_amount_cents,
+          o.items_count,
+          o.shipping_street,
+          o.shipping_street_number,
+          o.shipping_neighborhood,
+          o.shipping_city,
+          o.shipping_state,
+          o.shipping_postal_code,
+          o.shipping_complement,
+          o.created_at,
+          o.updated_at
+      `,
+      [orderId, status],
+    );
+
+    return this.mapOrder(rows[0]);
+  }
+
   // Inserts one audit log entry for product administration actions.
   async insertAuditLog(query: QueryExecutor, input: CreateAuditLogInput): Promise<void> {
     await query<QueryResultRow>(
@@ -399,6 +633,45 @@ export class AdminRepository {
 
     const row = rows[0];
     return row ? this.mapProduct(row) : null;
+  }
+
+
+
+  // Maps order database fields to a normalized admin order snapshot.
+  private mapOrder(record: AdminOrderDatabaseRecord): AdminOrderSnapshot {
+    return {
+      id: record.id,
+      customerId: record.customer_id,
+      customerName: record.customer_name ?? 'Cliente sem nome',
+      customerEmail: record.customer_email,
+      status: record.status,
+      currencyCode: record.currency_code,
+      totalAmountCents: record.total_amount_cents,
+      itemsCount: record.items_count,
+      shippingStreet: record.shipping_street,
+      shippingStreetNumber: record.shipping_street_number,
+      shippingNeighborhood: record.shipping_neighborhood,
+      shippingCity: record.shipping_city,
+      shippingState: record.shipping_state,
+      shippingPostalCode: record.shipping_postal_code,
+      shippingComplement: record.shipping_complement,
+      createdAt: new Date(record.created_at),
+      updatedAt: new Date(record.updated_at),
+    };
+  }
+
+  // Maps order item database fields to a normalized snapshot object.
+  private mapOrderItem(record: AdminOrderItemDatabaseRecord): AdminOrderItemSnapshot {
+    return {
+      id: record.id,
+      orderId: record.order_id,
+      productId: record.product_id,
+      productName: record.product_name,
+      productCategory: record.product_category,
+      unitPriceCents: record.unit_price_cents,
+      quantity: record.quantity,
+      lineTotalCents: record.line_total_cents,
+    };
   }
 
   // Maps product database fields to a normalized service snapshot object.

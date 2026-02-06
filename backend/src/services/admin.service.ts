@@ -2,10 +2,17 @@
 import { runInTransaction, type QueryExecutor } from '../config/database.js';
 import {
   AdminRepository,
+  type AdminOrderItemSnapshot,
+  type AdminOrderSnapshot,
   type AdminPainelData,
   type AdminProductSnapshot,
 } from '../repositories/admin.repository.js';
 import type {
+  AdminOrderStatus,
+  AdminOrderStatusMutationResponse,
+  AdminOrderSummary,
+  AdminOrdersFiltersInput,
+  AdminOrdersListResponse,
   AdminProductDeleteResponse,
   AdminProductDetailResponse,
   AdminProductMutationResponse,
@@ -13,11 +20,30 @@ import type {
   AdminProductsFiltersInput,
   AdminProductsListResponse,
   AdminProductSummary,
+  UpdateAdminOrderStatusInput,
 } from './admin.types.js';
 
 const EMBEDDING_DIMENSION = 8;
 
 type TransactionRunner = typeof runInTransaction;
+
+
+
+type NormalizedAdminOrdersFilters = {
+  status: AdminOrderStatus | 'all';
+  customer: string | null;
+  fromDate: string | null;
+  toDate: string | null;
+};
+
+const ADMIN_ORDER_STATUS_TRANSITIONS: Record<AdminOrderStatus, readonly AdminOrderStatus[]> = {
+  CREATED: ['PAID', 'CANCELED'],
+  PAID: ['PICKING', 'CANCELED'],
+  PICKING: ['SHIPPED', 'CANCELED'],
+  SHIPPED: ['DELIVERED', 'CANCELED'],
+  DELIVERED: [],
+  CANCELED: [],
+};
 
 type NormalizedAdminProductPayload = {
   name: string;
@@ -64,6 +90,90 @@ export class AdminService {
       data: this.toProductSummary(product),
     };
   }
+
+
+
+  // Lists admin orders with customer, status, and date filters.
+  async listOrders(input: AdminOrdersFiltersInput): Promise<AdminOrdersListResponse> {
+    const filters = this.normalizeOrdersFilters(input);
+    const orders = await this.adminRepository.listOrders(filters);
+    const orderItems = await this.adminRepository.listOrderItemsByOrderIds(orders.map((order) => order.id));
+
+    const itemsByOrder = new Map<string, AdminOrderItemSnapshot[]>();
+
+    for (const item of orderItems) {
+      const currentItems = itemsByOrder.get(item.orderId) ?? [];
+      currentItems.push(item);
+      itemsByOrder.set(item.orderId, currentItems);
+    }
+
+    return {
+      data: orders.map((order) => this.toOrderSummary(order, itemsByOrder.get(order.id) ?? [])),
+    };
+  }
+
+  // Updates one order status with transition validation, audit, and RAG sync.
+  async updateOrderStatus(
+    actorUserId: string,
+    orderId: string,
+    payload: UpdateAdminOrderStatusInput,
+  ): Promise<AdminOrderStatusMutationResponse> {
+    const normalizedActorUserId = this.requireActorUserId(actorUserId);
+    const normalizedOrderId = this.requireOrderId(orderId);
+    const nextStatus = this.parseOrderStatus(payload.status);
+
+    const updatedOrder = await this.transactionRunner(async (query) => {
+      const currentOrder = await this.adminRepository.findOrderById(query, normalizedOrderId, true);
+
+      if (!currentOrder) {
+        throw new AppError(404, 'Pedido não encontrado.');
+      }
+
+      this.ensureAllowedStatusTransition(currentOrder.status, nextStatus);
+
+      const updated = await this.adminRepository.updateOrderStatus(query, currentOrder.id, nextStatus);
+      const orderItems = await this.adminRepository.listOrderItems(query, currentOrder.id);
+
+      await this.adminRepository.insertAuditLog(query, {
+        actorUserId: normalizedActorUserId,
+        entityType: 'order',
+        entityId: updated.id,
+        action: 'ORDER_STATUS_UPDATED_BY_ADMIN',
+        payloadJson: {
+          previousStatus: currentOrder.status,
+          status: updated.status,
+          customerId: updated.customerId,
+          totalAmountCents: updated.totalAmountCents,
+        },
+      });
+
+      const orderMarkdown = this.buildOrderMarkdown(updated, orderItems);
+      const orderEmbedding = this.createEmbedding(orderMarkdown);
+
+      await this.adminRepository.upsertRagDocument(query, {
+        entityType: 'order',
+        entityId: updated.id,
+        contentMarkdown: orderMarkdown,
+        embedding: orderEmbedding,
+        metadataJson: {
+          customerId: updated.customerId,
+          customerName: updated.customerName,
+          status: updated.status,
+          totalAmountCents: updated.totalAmountCents,
+          itemsCount: updated.itemsCount,
+          updatedAt: updated.updatedAt.toISOString(),
+        },
+      });
+
+      return { order: updated, items: orderItems };
+    });
+
+    return {
+      mensagem: 'Status do pedido atualizado com sucesso.',
+      data: this.toOrderSummary(updatedOrder.order, updatedOrder.items),
+    };
+  }
+
 
   // Creates a product, records audit entry, and syncs vector index.
   async createProduct(
@@ -264,6 +374,95 @@ export class AdminService {
 
     return normalizedProductId;
   }
+
+
+
+  // Ensures route order identifier was provided.
+  private requireOrderId(orderId: string): string {
+    const normalizedOrderId = orderId.trim();
+
+    if (!normalizedOrderId) {
+      throw new AppError(400, 'Informe um pedido válido.');
+    }
+
+    return normalizedOrderId;
+  }
+
+  // Normalizes admin order filters from request query parameters.
+  private normalizeOrdersFilters(input: AdminOrdersFiltersInput): NormalizedAdminOrdersFilters {
+    return {
+      status: this.normalizeOrderFilterStatus(input.status),
+      customer: this.normalizeOptionalText(input.customer),
+      fromDate: this.normalizeDateFilter(input.fromDate, 'inicial'),
+      toDate: this.normalizeDateFilter(input.toDate, 'final'),
+    };
+  }
+
+  // Converts filter status to accepted values for admin order listing.
+  private normalizeOrderFilterStatus(value: string | undefined): AdminOrderStatus | 'all' {
+    const normalizedValue = value?.trim().toUpperCase();
+
+    if (!normalizedValue || normalizedValue === 'ALL') {
+      return 'all';
+    }
+
+    if (this.isOrderStatus(normalizedValue)) {
+      return normalizedValue;
+    }
+
+    throw new AppError(400, 'Informe um status de pedido válido para o filtro.');
+  }
+
+  // Validates optional date filter in YYYY-MM-DD format.
+  private normalizeDateFilter(value: string | undefined, label: 'inicial' | 'final'): string | null {
+    const normalizedValue = value?.trim() ?? '';
+
+    if (!normalizedValue) {
+      return null;
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedValue)) {
+      throw new AppError(400, `Informe uma data ${label} válida no formato AAAA-MM-DD.`);
+    }
+
+    return normalizedValue;
+  }
+
+  // Parses and validates one order status payload value.
+  private parseOrderStatus(value: unknown): AdminOrderStatus {
+    if (typeof value !== 'string') {
+      throw new AppError(400, 'Informe um status de pedido válido.');
+    }
+
+    const normalizedValue = value.trim().toUpperCase();
+
+    if (!this.isOrderStatus(normalizedValue)) {
+      throw new AppError(400, 'Informe um status de pedido válido.');
+    }
+
+    return normalizedValue;
+  }
+
+  // Returns whether the informed string is one supported order status.
+  private isOrderStatus(value: string): value is AdminOrderStatus {
+    return ['CREATED', 'PAID', 'PICKING', 'SHIPPED', 'DELIVERED', 'CANCELED'].includes(value);
+  }
+
+  // Validates v1 order status transitions for admin updates.
+  private ensureAllowedStatusTransition(currentStatus: AdminOrderStatus, nextStatus: AdminOrderStatus): void {
+    if (currentStatus === nextStatus) {
+      return;
+    }
+
+    const allowedStatuses = ADMIN_ORDER_STATUS_TRANSITIONS[currentStatus];
+
+    if (allowedStatuses.includes(nextStatus)) {
+      return;
+    }
+
+    throw new AppError(422, 'Transição de status inválida para este pedido.');
+  }
+
 
   // Normalizes optional text and returns null when empty.
   private normalizeOptionalText(value: string | undefined): string | null {
@@ -495,6 +694,70 @@ export class AdminService {
 
     return vector.map((value) => value / magnitude);
   }
+
+
+
+  // Maps order and items snapshots to one API-ready admin order response.
+  private toOrderSummary(order: AdminOrderSnapshot, items: AdminOrderItemSnapshot[]): AdminOrderSummary {
+    return {
+      id: order.id,
+      customerId: order.customerId,
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      status: order.status,
+      totalAmountCents: order.totalAmountCents,
+      itemsCount: order.itemsCount,
+      currencyCode: order.currencyCode,
+      createdAt: order.createdAt.toISOString(),
+      updatedAt: order.updatedAt.toISOString(),
+      shippingAddress: {
+        street: order.shippingStreet,
+        streetNumber: order.shippingStreetNumber,
+        neighborhood: order.shippingNeighborhood,
+        city: order.shippingCity,
+        state: order.shippingState,
+        postalCode: order.shippingPostalCode,
+        complement: order.shippingComplement,
+      },
+      items: items.map((item) => ({
+        id: item.id,
+        productId: item.productId,
+        productName: item.productName,
+        productCategory: item.productCategory,
+        quantity: item.quantity,
+        unitPriceCents: item.unitPriceCents,
+        lineTotalCents: item.lineTotalCents,
+      })),
+    };
+  }
+
+  // Builds canonical markdown content to index order updates in vector storage.
+  private buildOrderMarkdown(order: AdminOrderSnapshot, items: AdminOrderItemSnapshot[]): string {
+    const lines = [
+      `# Pedido ${order.id}`,
+      '',
+      `**Cliente:** ${order.customerName}`,
+      `**Status:** ${order.status}`,
+      `**Total:** ${this.formatCurrency(order.totalAmountCents)}`,
+      `**Quantidade de itens:** ${order.itemsCount}`,
+      '',
+      '## Endereço de entrega',
+      `- Rua: ${order.shippingStreet}, ${order.shippingStreetNumber}`,
+      `- Bairro: ${order.shippingNeighborhood}`,
+      `- Cidade/UF: ${order.shippingCity}/${order.shippingState}`,
+      `- CEP: ${order.shippingPostalCode}`,
+      `- Complemento: ${order.shippingComplement ?? 'Sem complemento'}`,
+      '',
+      '## Itens',
+      ...items.map(
+        (item) =>
+          `- ${item.productName} | categoria: ${item.productCategory} | quantidade: ${item.quantity} | preço unitário: ${this.formatCurrency(item.unitPriceCents)} | subtotal: ${this.formatCurrency(item.lineTotalCents)}`,
+      ),
+    ];
+
+    return lines.join('\n');
+  }
+
 
   // Maps repository snapshot fields into API-friendly product summary response.
   private toProductSummary(product: AdminProductSnapshot): AdminProductSummary {

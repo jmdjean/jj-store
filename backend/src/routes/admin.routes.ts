@@ -15,6 +15,15 @@ adminRouter.get('/admin/painel', authGuard, roleGuard(['ADMIN', 'MANAGER']), (re
   adminController.getPainel(request, response);
 });
 
+
+adminRouter.get('/admin/orders', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response, next) => {
+  adminController.listOrders(request, response, next);
+});
+
+adminRouter.put('/admin/orders/:id/status', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response, next) => {
+  adminController.updateOrderStatus(request, response, next);
+});
+
 adminRouter.get('/admin/products', authGuard, roleGuard(['ADMIN', 'MANAGER']), (request, response, next) => {
   adminController.listProducts(request, response, next);
 });

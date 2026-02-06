@@ -2,6 +2,7 @@
 import { AdminPageComponent } from './pages/admin-page.component';
 import { AdminProductsPageComponent } from './pages/admin-products-page.component';
 import { AdminProductFormPageComponent } from './pages/admin-product-form-page.component';
+import { AdminOrdersPageComponent } from './pages/admin-orders-page.component';
 import { RagSearchPageComponent } from './pages/rag-search-page.component';
 
 export const ADMIN_ROUTES: Routes = [
@@ -25,6 +26,10 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'produtos/:id/editar',
         component: AdminProductFormPageComponent,
+      },
+      {
+        path: 'pedidos',
+        component: AdminOrdersPageComponent,
       },
     ],
   },
