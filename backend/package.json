@@ -10,7 +10,8 @@
     "start": "node dist/server.js",
     "lint": "eslint .",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --config jest.config.mjs",
-    "rag:backfill": "tsx src/scripts/rag-backfill.ts"
+    "rag:backfill": "tsx src/scripts/rag-backfill.ts",
+    "migrate": "tsx database/migrate.ts"
   },
   "dependencies": {
     "@types/node": "^22.13.1",
