@@ -67,6 +67,7 @@ export type UpsertRagDocumentInput = {
   entityId: string;
   contentMarkdown: string;
   embedding: number[];
+  sourceUpdatedAt?: string | null;
   metadataJson: Record<string, unknown>;
 };
 
@@ -177,8 +178,8 @@ export class CartRepository {
   }
 
   // Persists a snapshot order item with fixed quantity and price.
-  async createOrderItem(query: QueryExecutor, input: CreateOrderItemInput): Promise<void> {
-    await query<QueryResultRow>(
+  async createOrderItem(query: QueryExecutor, input: CreateOrderItemInput): Promise<string> {
+    const rows = await query<QueryResultRow & { id: string }>(
       `
         INSERT INTO order_items (
           order_id,
@@ -190,6 +191,7 @@ export class CartRepository {
           line_total_cents
         )
         VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id
       `,
       [
         input.orderId,
@@ -201,6 +203,8 @@ export class CartRepository {
         input.lineTotalCents,
       ],
     );
+
+    return rows[0].id;
   }
 
   // Decreases stock quantity for a product and confirms the update happened.
@@ -233,15 +237,17 @@ export class CartRepository {
           content_markdown,
           embedding,
           metadata_json,
+          source_updated_at,
           updated_at
         )
-        VALUES ($1, $2, $3, $4::vector, $5::jsonb, NOW())
+        VALUES ($1, $2, $3, $4::vector, $5::jsonb, $6::timestamptz, NOW())
         ON CONFLICT (entity_type, entity_id)
         DO UPDATE
         SET
           content_markdown = EXCLUDED.content_markdown,
           embedding = EXCLUDED.embedding,
           metadata_json = EXCLUDED.metadata_json,
+          source_updated_at = EXCLUDED.source_updated_at,
           updated_at = NOW()
       `,
       [
@@ -250,6 +256,7 @@ export class CartRepository {
         input.contentMarkdown,
         embeddingVector,
         JSON.stringify(input.metadataJson),
+        input.sourceUpdatedAt ?? null,
       ],
     );
   }

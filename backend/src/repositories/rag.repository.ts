@@ -7,6 +7,7 @@ export type RagDocumentInput = {
   entityId: string;
   contentMarkdown: string;
   embedding: number[];
+  sourceUpdatedAt?: string | null;
   metadataJson: Record<string, unknown>;
 };
 
@@ -83,15 +84,17 @@ export class RagRepository {
           content_markdown,
           embedding,
           metadata_json,
+          source_updated_at,
           updated_at
         )
-        VALUES ($1, $2, $3, $4::vector, $5::jsonb, NOW())
+        VALUES ($1, $2, $3, $4::vector, $5::jsonb, $6::timestamptz, NOW())
         ON CONFLICT (entity_type, entity_id)
         DO UPDATE
         SET
           content_markdown = EXCLUDED.content_markdown,
           embedding = EXCLUDED.embedding,
           metadata_json = EXCLUDED.metadata_json,
+          source_updated_at = EXCLUDED.source_updated_at,
           updated_at = NOW()
       `,
       [
@@ -100,7 +103,22 @@ export class RagRepository {
         input.contentMarkdown,
         embeddingVector,
         JSON.stringify(input.metadataJson),
+        input.sourceUpdatedAt ?? null,
       ],
+    );
+  }
+
+  // Deletes a vectorized document for one relational entity.
+  async deleteDocument(entityType: RagEntityType, entityId: string, query?: QueryExecutor): Promise<void> {
+    const execute = query ?? runQuery;
+
+    await execute(
+      `
+        DELETE FROM rag_documents
+        WHERE entity_type = $1
+          AND entity_id = $2
+      `,
+      [entityType, entityId],
     );
   }
 
@@ -112,6 +130,8 @@ export class RagRepository {
   }): Promise<RagSearchRow[]> {
     const embeddingVector = `[${input.embedding.map((value) => value.toFixed(6)).join(',')}]`;
 
+    const entityTypes = input.entityTypes.length > 0 ? input.entityTypes : null;
+
     return runQuery<RagSearchRow>(
       `
         SELECT
@@ -119,17 +139,10 @@ export class RagRepository {
           entity_id,
           content_markdown,
           metadata_json,
-          1 - (embedding <=> $1::vector) AS score
-        FROM rag_documents
-        WHERE
-          CASE
-            WHEN cardinality($2::text[]) = 0 THEN TRUE
-            ELSE entity_type = ANY($2::text[])
-          END
-        ORDER BY embedding <=> $1::vector
-        LIMIT $3
+          score
+        FROM rag_search($1::vector, $2::int, $3::text[])
       `,
-      [embeddingVector, input.entityTypes, input.topK],
+      [embeddingVector, input.topK, entityTypes],
     );
   }
 
@@ -215,6 +228,278 @@ export class RagRepository {
           line_total_cents
         FROM order_items
       `,
+    );
+  }
+
+  // Counts product rows eligible for indexing with optional filters.
+  async countProductsForIndexing(input: {
+    fromDate?: string;
+    toDate?: string;
+    entityId?: string;
+  }): Promise<number> {
+    const rows = await runQuery<{ total: string }>(
+      `
+        SELECT COUNT(*)::text AS total
+        FROM products p
+        WHERE ($1::timestamptz IS NULL OR p.updated_at >= $1)
+          AND ($2::timestamptz IS NULL OR p.updated_at <= $2)
+          AND ($3::uuid IS NULL OR p.id = $3)
+      `,
+      [input.fromDate ?? null, input.toDate ?? null, input.entityId ?? null],
+    );
+
+    return Number(rows[0]?.total ?? 0);
+  }
+
+  // Loads product rows for indexing in batches with filters.
+  async listProductsForIndexingBatch(input: {
+    fromDate?: string;
+    toDate?: string;
+    entityId?: string;
+    limit: number;
+    offset: number;
+  }): Promise<ProductRagSource[]> {
+    return runQuery<ProductRagSource>(
+      `
+        SELECT
+          p.id,
+          p.name,
+          p.description,
+          p.category,
+          p.price_cents,
+          p.weight_grams,
+          p.is_active,
+          COALESCE(i.quantity - i.reserved_quantity, 0) AS stock_quantity,
+          p.updated_at::text
+        FROM products p
+        LEFT JOIN inventory i ON i.product_id = p.id
+        WHERE ($1::timestamptz IS NULL OR p.updated_at >= $1)
+          AND ($2::timestamptz IS NULL OR p.updated_at <= $2)
+          AND ($3::uuid IS NULL OR p.id = $3)
+        ORDER BY p.updated_at ASC, p.id ASC
+        LIMIT $4
+        OFFSET $5
+      `,
+      [input.fromDate ?? null, input.toDate ?? null, input.entityId ?? null, input.limit, input.offset],
+    );
+  }
+
+  // Counts customer profile rows eligible for indexing with optional filters.
+  async countCustomersForIndexing(input: {
+    fromDate?: string;
+    toDate?: string;
+    entityId?: string;
+  }): Promise<number> {
+    const rows = await runQuery<{ total: string }>(
+      `
+        SELECT COUNT(*)::text AS total
+        FROM customers_profile cp
+        INNER JOIN users u ON u.id = cp.user_id
+        WHERE ($1::timestamptz IS NULL OR GREATEST(cp.updated_at, u.updated_at) >= $1)
+          AND ($2::timestamptz IS NULL OR GREATEST(cp.updated_at, u.updated_at) <= $2)
+          AND ($3::uuid IS NULL OR cp.user_id = $3)
+      `,
+      [input.fromDate ?? null, input.toDate ?? null, input.entityId ?? null],
+    );
+
+    return Number(rows[0]?.total ?? 0);
+  }
+
+  // Loads customer profile rows for indexing in batches with filters.
+  async listCustomersForIndexingBatch(input: {
+    fromDate?: string;
+    toDate?: string;
+    entityId?: string;
+    limit: number;
+    offset: number;
+  }): Promise<CustomerRagSource[]> {
+    return runQuery<CustomerRagSource>(
+      `
+        SELECT
+          cp.user_id,
+          cp.full_name,
+          cp.cpf,
+          u.email,
+          cp.city,
+          cp.state,
+          GREATEST(cp.updated_at, u.updated_at)::text AS updated_at
+        FROM customers_profile cp
+        INNER JOIN users u ON u.id = cp.user_id
+        WHERE ($1::timestamptz IS NULL OR GREATEST(cp.updated_at, u.updated_at) >= $1)
+          AND ($2::timestamptz IS NULL OR GREATEST(cp.updated_at, u.updated_at) <= $2)
+          AND ($3::uuid IS NULL OR cp.user_id = $3)
+        ORDER BY GREATEST(cp.updated_at, u.updated_at) ASC, cp.user_id ASC
+        LIMIT $4
+        OFFSET $5
+      `,
+      [input.fromDate ?? null, input.toDate ?? null, input.entityId ?? null, input.limit, input.offset],
+    );
+  }
+
+  // Counts manager rows eligible for indexing with optional filters.
+  async countManagersForIndexing(input: {
+    fromDate?: string;
+    toDate?: string;
+    entityId?: string;
+  }): Promise<number> {
+    const rows = await runQuery<{ total: string }>(
+      `
+        SELECT COUNT(*)::text AS total
+        FROM users
+        WHERE role = 'MANAGER'
+          AND ($1::timestamptz IS NULL OR updated_at >= $1)
+          AND ($2::timestamptz IS NULL OR updated_at <= $2)
+          AND ($3::uuid IS NULL OR id = $3)
+      `,
+      [input.fromDate ?? null, input.toDate ?? null, input.entityId ?? null],
+    );
+
+    return Number(rows[0]?.total ?? 0);
+  }
+
+  // Loads manager rows for indexing in batches with filters.
+  async listManagersForIndexingBatch(input: {
+    fromDate?: string;
+    toDate?: string;
+    entityId?: string;
+    limit: number;
+    offset: number;
+  }): Promise<ManagerRagSource[]> {
+    return runQuery<ManagerRagSource>(
+      `
+        SELECT id, username, email, updated_at::text
+        FROM users
+        WHERE role = 'MANAGER'
+          AND ($1::timestamptz IS NULL OR updated_at >= $1)
+          AND ($2::timestamptz IS NULL OR updated_at <= $2)
+          AND ($3::uuid IS NULL OR id = $3)
+        ORDER BY updated_at ASC, id ASC
+        LIMIT $4
+        OFFSET $5
+      `,
+      [input.fromDate ?? null, input.toDate ?? null, input.entityId ?? null, input.limit, input.offset],
+    );
+  }
+
+  // Counts order rows eligible for indexing with optional filters.
+  async countOrdersForIndexing(input: {
+    fromDate?: string;
+    toDate?: string;
+    entityId?: string;
+  }): Promise<number> {
+    const rows = await runQuery<{ total: string }>(
+      `
+        SELECT COUNT(*)::text AS total
+        FROM orders
+        WHERE ($1::timestamptz IS NULL OR updated_at >= $1)
+          AND ($2::timestamptz IS NULL OR updated_at <= $2)
+          AND ($3::uuid IS NULL OR id = $3)
+      `,
+      [input.fromDate ?? null, input.toDate ?? null, input.entityId ?? null],
+    );
+
+    return Number(rows[0]?.total ?? 0);
+  }
+
+  // Loads order rows for indexing in batches with filters.
+  async listOrdersForIndexingBatch(input: {
+    fromDate?: string;
+    toDate?: string;
+    entityId?: string;
+    limit: number;
+    offset: number;
+  }): Promise<OrderRagSource[]> {
+    return runQuery<OrderRagSource>(
+      `
+        SELECT
+          id,
+          customer_id,
+          status,
+          total_amount_cents,
+          items_count,
+          shipping_city,
+          shipping_state,
+          updated_at::text
+        FROM orders
+        WHERE ($1::timestamptz IS NULL OR updated_at >= $1)
+          AND ($2::timestamptz IS NULL OR updated_at <= $2)
+          AND ($3::uuid IS NULL OR id = $3)
+        ORDER BY updated_at ASC, id ASC
+        LIMIT $4
+        OFFSET $5
+      `,
+      [input.fromDate ?? null, input.toDate ?? null, input.entityId ?? null, input.limit, input.offset],
+    );
+  }
+
+  // Counts order item rows eligible for indexing with optional filters.
+  async countOrderItemsForIndexing(input: {
+    fromDate?: string;
+    toDate?: string;
+    entityId?: string;
+  }): Promise<number> {
+    const rows = await runQuery<{ total: string }>(
+      `
+        SELECT COUNT(*)::text AS total
+        FROM order_items
+        WHERE ($1::timestamptz IS NULL OR created_at >= $1)
+          AND ($2::timestamptz IS NULL OR created_at <= $2)
+          AND ($3::uuid IS NULL OR id = $3)
+      `,
+      [input.fromDate ?? null, input.toDate ?? null, input.entityId ?? null],
+    );
+
+    return Number(rows[0]?.total ?? 0);
+  }
+
+  // Loads order item rows for indexing in batches with filters.
+  async listOrderItemsForIndexingBatch(input: {
+    fromDate?: string;
+    toDate?: string;
+    entityId?: string;
+    limit: number;
+    offset: number;
+  }): Promise<OrderItemRagSource[]> {
+    return runQuery<OrderItemRagSource>(
+      `
+        SELECT
+          id,
+          order_id,
+          product_id,
+          product_name,
+          product_category,
+          quantity,
+          unit_price_cents,
+          line_total_cents
+        FROM order_items
+        WHERE ($1::timestamptz IS NULL OR created_at >= $1)
+          AND ($2::timestamptz IS NULL OR created_at <= $2)
+          AND ($3::uuid IS NULL OR id = $3)
+        ORDER BY created_at ASC, id ASC
+        LIMIT $4
+        OFFSET $5
+      `,
+      [input.fromDate ?? null, input.toDate ?? null, input.entityId ?? null, input.limit, input.offset],
+    );
+  }
+
+  // Loads order item rows for a list of order ids.
+  async listOrderItemsForOrders(orderIds: string[]): Promise<OrderItemRagSource[]> {
+    return runQuery<OrderItemRagSource>(
+      `
+        SELECT
+          id,
+          order_id,
+          product_id,
+          product_name,
+          product_category,
+          quantity,
+          unit_price_cents,
+          line_total_cents
+        FROM order_items
+        WHERE order_id = ANY($1::uuid[])
+      `,
+      [orderIds],
     );
   }
 }

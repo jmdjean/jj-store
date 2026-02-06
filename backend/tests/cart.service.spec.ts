@@ -1,7 +1,8 @@
-﻿import { AppError } from '../src/common/app-error.js';
+import { AppError } from '../src/common/app-error.js';
 import type { QueryExecutor } from '../src/config/database.js';
 import { CartService } from '../src/services/cart.service.js';
 import type { CartRepository } from '../src/repositories/cart.repository.js';
+import type { RagSyncService } from '../src/services/rag-sync.service.js';
 
 describe('CartService', () => {
   const fakeQuery: QueryExecutor = async () => [];
@@ -31,12 +32,17 @@ describe('CartService', () => {
         },
       ],
       createOrder: async () => 'pedido-1',
-      createOrderItem: async () => undefined,
+      createOrderItem: async () => 'item-1',
       decrementInventory: async () => true,
       upsertRagDocument: async () => undefined,
     } as CartRepository;
 
-    const service = new CartService(repository, createTransactionRunner());
+    const ragSyncService: RagSyncService = {
+      syncOrder: async () => undefined,
+      syncOrderItem: async () => undefined,
+    } as RagSyncService;
+
+    const service = new CartService(repository, createTransactionRunner(), ragSyncService);
 
     const response = await service.checkout('cliente-1', {
       items: [{ productId: 'produto-1', quantity: 2 }],
@@ -61,12 +67,17 @@ describe('CartService', () => {
       }),
       lockProductsForCheckout: async () => [],
       createOrder: async () => 'pedido-1',
-      createOrderItem: async () => undefined,
+      createOrderItem: async () => 'item-1',
       decrementInventory: async () => true,
       upsertRagDocument: async () => undefined,
     } as CartRepository;
 
-    const service = new CartService(repository, createTransactionRunner());
+    const ragSyncService: RagSyncService = {
+      syncOrder: async () => undefined,
+      syncOrderItem: async () => undefined,
+    } as RagSyncService;
+
+    const service = new CartService(repository, createTransactionRunner(), ragSyncService);
 
     await expect(
       service.checkout('cliente-1', {
@@ -99,12 +110,17 @@ describe('CartService', () => {
         },
       ],
       createOrder: async () => 'pedido-1',
-      createOrderItem: async () => undefined,
+      createOrderItem: async () => 'item-1',
       decrementInventory: async () => true,
       upsertRagDocument: async () => undefined,
     } as CartRepository;
 
-    const service = new CartService(repository, createTransactionRunner());
+    const ragSyncService: RagSyncService = {
+      syncOrder: async () => undefined,
+      syncOrderItem: async () => undefined,
+    } as RagSyncService;
+
+    const service = new CartService(repository, createTransactionRunner(), ragSyncService);
 
     await expect(
       service.checkout('cliente-1', {

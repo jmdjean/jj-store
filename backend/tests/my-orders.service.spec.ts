@@ -2,6 +2,7 @@ import { AppError } from '../src/common/app-error.js';
 import type { QueryExecutor } from '../src/config/database.js';
 import type { MyOrdersRepository } from '../src/repositories/my-orders.repository.js';
 import { MyOrdersService } from '../src/services/my-orders.service.js';
+import type { RagSyncService } from '../src/services/rag-sync.service.js';
 
 describe('MyOrdersService', () => {
   const fakeQuery: QueryExecutor = async () => [];
@@ -11,6 +12,11 @@ describe('MyOrdersService', () => {
   const createTransactionRunner = () => async <T>(
     callback: (query: QueryExecutor) => Promise<T>,
   ): Promise<T> => callback(fakeQuery);
+  const createRagSyncService = (): RagSyncService =>
+    ({
+      syncOrder: async () => undefined,
+      syncOrderItem: async () => undefined,
+    }) as RagSyncService;
 
   it('lista pedidos paginados com metadados', async () => {
     const repository: MyOrdersRepository = {
@@ -43,7 +49,12 @@ describe('MyOrdersService', () => {
       upsertRagDocument: async () => undefined,
     } as MyOrdersRepository;
 
-    const service = new MyOrdersService(repository, createQueryRunner() as never, createTransactionRunner());
+    const service = new MyOrdersService(
+      repository,
+      createQueryRunner() as never,
+      createTransactionRunner(),
+      createRagSyncService(),
+    );
     const response = await service.listOrders('cliente-1', { page: 1, pageSize: 10 });
 
     expect(response.meta).toEqual({
@@ -110,7 +121,12 @@ describe('MyOrdersService', () => {
       upsertRagDocument: async () => undefined,
     } as MyOrdersRepository;
 
-    const service = new MyOrdersService(repository, createQueryRunner() as never, createTransactionRunner());
+    const service = new MyOrdersService(
+      repository,
+      createQueryRunner() as never,
+      createTransactionRunner(),
+      createRagSyncService(),
+    );
     const response = await service.cancelOrder('cliente-1', 'pedido-1');
 
     expect(response).toEqual({
@@ -148,7 +164,12 @@ describe('MyOrdersService', () => {
       upsertRagDocument: async () => undefined,
     } as MyOrdersRepository;
 
-    const service = new MyOrdersService(repository, createQueryRunner() as never, createTransactionRunner());
+    const service = new MyOrdersService(
+      repository,
+      createQueryRunner() as never,
+      createTransactionRunner(),
+      createRagSyncService(),
+    );
 
     await expect(service.cancelOrder('cliente-1', 'pedido-1')).rejects.toMatchObject<AppError>({
       statusCode: 422,
@@ -186,7 +207,12 @@ describe('MyOrdersService', () => {
       upsertRagDocument: async () => undefined,
     } as MyOrdersRepository;
 
-    const service = new MyOrdersService(repository, createQueryRunner() as never, createTransactionRunner());
+    const service = new MyOrdersService(
+      repository,
+      createQueryRunner() as never,
+      createTransactionRunner(),
+      createRagSyncService(),
+    );
 
     await expect(service.cancelOrder('cliente-1', 'pedido-1')).rejects.toMatchObject<AppError>({
       statusCode: 422,
