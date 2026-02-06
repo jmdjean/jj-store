@@ -1,5 +1,6 @@
 import { AppError } from '../common/app-error.js';
 import { runInTransaction, runQuery, type QueryExecutor } from '../config/database.js';
+import { env } from '../config/env.js';
 import {
   MyOrdersRepository,
   type OrderItemSnapshot,
@@ -20,7 +21,7 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 50;
 const CANCELLATION_WINDOW_DAYS = 3;
-const EMBEDDING_DIMENSION = 8;
+const EMBEDDING_DIMENSION = env.embeddingDimension;
 
 type TransactionRunner = typeof runInTransaction;
 type QueryRunner = typeof runQuery;
@@ -133,6 +134,7 @@ export class MyOrdersService {
         entityId: canceledOrder.id,
         contentMarkdown: orderMarkdown,
         embedding: orderEmbedding,
+        sourceUpdatedAt: canceledOrder.updatedAt.toISOString(),
         metadataJson: {
           customerId: normalizedCustomerId,
           totalAmountCents: canceledOrder.totalAmountCents,

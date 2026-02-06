@@ -1,5 +1,6 @@
 ﻿import { AppError } from '../common/app-error.js';
 import { runInTransaction, type QueryExecutor } from '../config/database.js';
+import { env } from '../config/env.js';
 import {
   AdminRepository,
   type AdminOrderItemSnapshot,
@@ -23,7 +24,7 @@ import type {
   UpdateAdminOrderStatusInput,
 } from './admin.types.js';
 
-const EMBEDDING_DIMENSION = 8;
+const EMBEDDING_DIMENSION = env.embeddingDimension;
 
 type TransactionRunner = typeof runInTransaction;
 
@@ -155,6 +156,7 @@ export class AdminService {
         entityId: updated.id,
         contentMarkdown: orderMarkdown,
         embedding: orderEmbedding,
+        sourceUpdatedAt: updated.updatedAt.toISOString(),
         metadataJson: {
           customerId: updated.customerId,
           customerName: updated.customerName,
@@ -638,6 +640,7 @@ export class AdminService {
       entityId: product.id,
       contentMarkdown: productMarkdown,
       embedding,
+      sourceUpdatedAt: product.updatedAt.toISOString(),
       metadataJson: {
         category: product.category,
         sale_price: product.salePriceCents / 100,
@@ -778,4 +781,3 @@ export class AdminService {
     };
   }
 }
-

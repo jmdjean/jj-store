@@ -1,5 +1,6 @@
 ﻿import { AppError } from '../common/app-error.js';
 import { runInTransaction } from '../config/database.js';
+import { env } from '../config/env.js';
 import {
   CartRepository,
   type CheckoutProductSnapshot,
@@ -21,7 +22,7 @@ type PlannedOrderItem = {
   lineTotalCents: number;
 };
 
-const EMBEDDING_DIMENSION = 8;
+const EMBEDDING_DIMENSION = env.embeddingDimension;
 type TransactionRunner = typeof runInTransaction;
 
 export class CartService {
@@ -87,6 +88,7 @@ export class CartService {
         entityId: orderId,
         contentMarkdown: orderMarkdown,
         embedding: orderEmbedding,
+        sourceUpdatedAt: new Date().toISOString(),
         metadataJson: {
           customerId: normalizedCustomerId,
           totalAmountCents,

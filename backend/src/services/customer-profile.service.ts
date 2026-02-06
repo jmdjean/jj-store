@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { AppError } from '../common/app-error.js';
+import { env } from '../config/env.js';
 import {
   CustomerProfileRepository,
   type CustomerProfile,
@@ -38,7 +39,7 @@ type NormalizedRegisterInput = {
   address: NormalizedAddress;
 };
 
-const EMBEDDING_DIMENSION = 8;
+const EMBEDDING_DIMENSION = env.embeddingDimension;
 
 export class CustomerProfileService {
   constructor(
@@ -302,6 +303,7 @@ export class CustomerProfileService {
       entityId: profile.userId,
       contentMarkdown,
       embedding,
+      sourceUpdatedAt: new Date().toISOString(),
       metadataJson: {
         city: profile.city,
         state: profile.state,
