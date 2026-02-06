@@ -30,8 +30,12 @@ export const routes: Routes = [
     loadChildren: () => import('./features/admin/routes').then((module) => module.ADMIN_ROUTES),
   },
   {
-    path: '',
+    path: 'carrinho',
     loadChildren: () => import('./features/cart/routes').then((module) => module.CART_ROUTES),
+  },
+  {
+    path: 'checkout',
+    loadChildren: () => import('./features/cart/routes').then((module) => module.CHECKOUT_ROUTES),
   },
   {
     path: 'minhas-compras',
