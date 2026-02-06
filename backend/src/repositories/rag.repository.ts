@@ -7,6 +7,7 @@ export type RagDocumentInput = {
   entityId: string;
   contentMarkdown: string;
   embedding: number[];
+  sourceUpdatedAt?: string | null;
   metadataJson: Record<string, unknown>;
 };
 
@@ -83,15 +84,17 @@ export class RagRepository {
           content_markdown,
           embedding,
           metadata_json,
+          source_updated_at,
           updated_at
         )
-        VALUES ($1, $2, $3, $4::vector, $5::jsonb, NOW())
+        VALUES ($1, $2, $3, $4::vector, $5::jsonb, $6::timestamptz, NOW())
         ON CONFLICT (entity_type, entity_id)
         DO UPDATE
         SET
           content_markdown = EXCLUDED.content_markdown,
           embedding = EXCLUDED.embedding,
           metadata_json = EXCLUDED.metadata_json,
+          source_updated_at = EXCLUDED.source_updated_at,
           updated_at = NOW()
       `,
       [
@@ -100,6 +103,7 @@ export class RagRepository {
         input.contentMarkdown,
         embeddingVector,
         JSON.stringify(input.metadataJson),
+        input.sourceUpdatedAt ?? null,
       ],
     );
   }
@@ -112,6 +116,8 @@ export class RagRepository {
   }): Promise<RagSearchRow[]> {
     const embeddingVector = `[${input.embedding.map((value) => value.toFixed(6)).join(',')}]`;
 
+    const entityTypes = input.entityTypes.length > 0 ? input.entityTypes : null;
+
     return runQuery<RagSearchRow>(
       `
         SELECT
@@ -119,17 +125,10 @@ export class RagRepository {
           entity_id,
           content_markdown,
           metadata_json,
-          1 - (embedding <=> $1::vector) AS score
-        FROM rag_documents
-        WHERE
-          CASE
-            WHEN cardinality($2::text[]) = 0 THEN TRUE
-            ELSE entity_type = ANY($2::text[])
-          END
-        ORDER BY embedding <=> $1::vector
-        LIMIT $3
+          score
+        FROM rag_search($1::vector, $2::int, $3::text[])
       `,
-      [embeddingVector, input.entityTypes, input.topK],
+      [embeddingVector, input.topK, entityTypes],
     );
   }
 

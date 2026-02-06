@@ -1,4 +1,5 @@
 import { AppError } from '../common/app-error.js';
+import { env } from '../config/env.js';
 import {
   RagRepository,
   type RagEntityType,
@@ -9,7 +10,7 @@ import {
   type ProductRagSource,
 } from '../repositories/rag.repository.js';
 
-const EMBEDDING_DIMENSION = 8;
+const EMBEDDING_DIMENSION = env.embeddingDimension;
 const MAX_TOP_K = 20;
 const MIN_TOP_K = 1;
 
@@ -92,6 +93,7 @@ export class RagService {
           entityId: product.id,
           contentMarkdown,
           embedding,
+          sourceUpdatedAt: product.updated_at,
           metadataJson: {
             category: product.category,
             salePrice: product.price_cents / 100,
@@ -117,6 +119,7 @@ export class RagService {
           entityId: customer.user_id,
           contentMarkdown,
           embedding,
+          sourceUpdatedAt: customer.updated_at,
           metadataJson: {
             city: customer.city,
             state: customer.state,
@@ -139,6 +142,7 @@ export class RagService {
           entityId: manager.id,
           contentMarkdown,
           embedding,
+          sourceUpdatedAt: manager.updated_at,
           metadataJson: {
             email: manager.email,
             username: manager.username,
@@ -161,6 +165,7 @@ export class RagService {
           entityId: order.id,
           contentMarkdown,
           embedding,
+          sourceUpdatedAt: order.updated_at,
           metadataJson: {
             customerId: order.customer_id,
             status: order.status,
