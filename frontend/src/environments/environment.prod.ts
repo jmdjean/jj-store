@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'http://localhost:3000',
+  /** Empty when frontend is served by the same backend (single Render service). */
+  apiBaseUrl: '',
 };

@@ -45,21 +45,20 @@ npm run test
 npm run build
 ```
 
-## Deploy no Render (monorepo)
+## Deploy no Render (um único serviço)
 
-Este repositório já inclui `render.yaml` para provisionar:
+O `render.yaml` na raiz provisiona:
 
 - `jj-store-db` (PostgreSQL)
-- `jj-store-backend` (Web Service)
-- `jj-store-frontend` (Static Site)
+- `jj-store` (Web Service: API + frontend Angular no mesmo servidor)
 
 ### Como publicar
 
-1. No Render, selecione **Blueprint** e conecte o repositório.
-2. Faça o deploy usando o arquivo `render.yaml` da raiz.
-3. Após o banco subir, execute as migrations SQL do backend no banco provisionado (arquivos em `backend/database/migrations`).
+1. No Render, use **Blueprint** e conecte o repositório.
+2. Faça o deploy usando o `render.yaml` da raiz.
+3. As migrations rodam automaticamente no preDeploy.
 
-### Observações importantes
+### Observações
 
-- O frontend em produção recebe a URL da API via variável `API_BASE_URL` definida no `render.yaml`.
-- O backend usa `DATABASE_URL` do banco provisionado automaticamente no Render.
+- Tudo roda em uma única URL: a API em rotas como `/health`, `/auth/login`, etc., e o site Angular em qualquer outra rota.
+- O backend usa `DATABASE_URL` do banco provisionado pelo Render.
