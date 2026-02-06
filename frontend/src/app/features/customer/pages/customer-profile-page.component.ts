@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { PhoneMaskDirective } from '../../../core/directives/phone-mask.directive';
+import { phoneValidator } from '../../../core/validators/phone.validator';
 import { CustomerProfileFacade } from '../facade/customer-profile.facade';
 import type { CustomerProfile, UpdateCustomerProfilePayload } from '../models/customer-profile.models';
 
 @Component({
   selector: 'app-customer-profile-page',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, PhoneMaskDirective],
   templateUrl: './customer-profile-page.component.html',
   styleUrl: './customer-profile-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,7 +22,7 @@ export class CustomerProfilePageComponent implements OnInit {
     fullName: ['', [Validators.required, Validators.minLength(3)]],
     birthDate: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.pattern(/^\d{10,11}$/)]],
+    phone: ['', [phoneValidator()]],
     street: ['', [Validators.required]],
     streetNumber: ['', [Validators.required]],
     neighborhood: ['', [Validators.required]],
@@ -68,14 +70,29 @@ export class CustomerProfilePageComponent implements OnInit {
     return control.invalid && (control.touched || control.dirty);
   }
 
+  // Returns pt-BR validation message for phone or email control.
+  protected getControlMessage(controlName: keyof typeof this.profileForm.controls): string {
+    const control = this.profileForm.controls[controlName];
+    if (control.hasError('phone') && control.getError('phone')?.message) {
+      return control.getError('phone').message as string;
+    }
+    if (control.hasError('email')) {
+      return 'Informe um e-mail válido.';
+    }
+    if (control.hasError('required')) {
+      return 'Campo obrigatório.';
+    }
+    return 'Valor inválido.';
+  }
+
   // Applies profile data to the reactive form controls.
   private applyProfile(profile: CustomerProfile): void {
     this.profileForm.patchValue({
-      cpf: profile.cpf,
+      cpf: this.formatCpfDisplay(profile.cpf),
       fullName: profile.fullName,
       birthDate: profile.birthDate,
       email: profile.email,
-      phone: profile.phone ?? '',
+      phone: profile.phone ? this.formatPhoneDisplay(profile.phone) : '',
       street: profile.address.street,
       streetNumber: profile.address.streetNumber,
       neighborhood: profile.address.neighborhood,
@@ -86,15 +103,32 @@ export class CustomerProfilePageComponent implements OnInit {
     });
   }
 
+  // Formats 11-digit CPF string for readonly display (000.000.000-00).
+  private formatCpfDisplay(cpf: string): string {
+    const d = (cpf ?? '').replace(/\D/g, '');
+    if (d.length !== 11) return cpf;
+    return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+  }
+
+  // Formats phone digits for display (00) 00000-0000 or (00) 0000-0000.
+  private formatPhoneDisplay(phone: string): string {
+    const d = (phone ?? '').replace(/\D/g, '');
+    if (d.length <= 2) return d ? `(${d}` : '';
+    if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+    if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7, 11)}`;
+  }
+
   // Maps form values to the profile update payload format.
   private toUpdatePayload(): UpdateCustomerProfilePayload {
     const values = this.profileForm.getRawValue();
+    const phoneDigits = (values.phone ?? '').replace(/\D/g, '').trim();
 
     return {
       fullName: values.fullName.trim(),
       birthDate: values.birthDate,
       email: values.email.trim(),
-      phone: values.phone.trim() || undefined,
+      phone: phoneDigits || undefined,
       address: {
         street: values.street.trim(),
         streetNumber: values.streetNumber.trim(),

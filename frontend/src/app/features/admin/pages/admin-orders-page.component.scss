@@ -1,93 +1,101 @@
 .orders-page {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-xl, 1.25rem);
 }
 
 .page-header {
-  padding: 1.1rem 1.2rem;
-  border-radius: 0.9rem;
-  border: 1px solid #d6e2e8;
-  background: #ffffffd9;
+  padding: var(--space-xl, 1.25rem) var(--space-2xl, 1.5rem);
+  border-radius: var(--card-radius, 0.75rem);
+  border: 1px solid var(--color-border, #d6e2e8);
+  background: var(--color-surface, #fff);
+  box-shadow: var(--card-shadow, 0 1px 3px rgba(0, 0, 0, 0.06));
 }
 
 .page-header h1 {
   margin: 0;
-  color: #123641;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #123641);
 }
 
 .page-header p {
   margin: 0.35rem 0 0;
-  color: #4a6770;
+  color: var(--color-text-secondary, #4a6770);
+  font-size: 0.9375rem;
 }
 
 .filters {
   display: grid;
   grid-template-columns: repeat(5, minmax(140px, 1fr));
-  gap: 0.9rem;
-  padding: 1rem;
-  border-radius: 0.9rem;
-  border: 1px solid #d6e2e8;
-  background: #fff;
+  gap: var(--space-lg, 1rem);
+  padding: var(--space-xl, 1.25rem);
+  border-radius: var(--card-radius, 0.75rem);
+  border: 1px solid var(--color-border, #d6e2e8);
+  background: var(--color-surface, #fff);
 }
 
 label {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  color: #2a4852;
+  gap: var(--space-xs, 0.25rem);
+  color: var(--color-text-secondary, #2a4852);
   font-size: 0.9rem;
 }
 
 input,
 select {
-  border: 1px solid #c3d5dd;
-  border-radius: 0.6rem;
-  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--color-border, #c3d5dd);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
   font: inherit;
+  min-height: var(--touch-min, 44px);
 }
 
 .filter-actions {
   display: flex;
   align-items: flex-end;
-  gap: 0.6rem;
+  gap: var(--space-sm, 0.5rem);
 }
 
 .primary-button,
 .secondary-button {
   border: none;
-  border-radius: 0.6rem;
-  padding: 0.58rem 0.92rem;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
   cursor: pointer;
+  min-height: var(--touch-min, 44px);
 }
 
 .primary-button {
-  background: #0c7a60;
-  color: #fff;
+  background: var(--color-primary, #0c7a60);
+  color: var(--color-primary-foreground, #fff);
 }
 
 .secondary-button {
-  background: #e7f1f7;
-  color: #1f3d48;
+  background: var(--color-surface-elevated, #e7f1f7);
+  color: var(--color-text-primary, #1f3d48);
 }
 
 .state-card {
-  border-radius: 0.8rem;
-  border: 1px solid #d4e1e6;
-  background: #fff;
-  padding: 0.9rem;
+  border-radius: var(--card-radius, 0.75rem);
+  border: 1px solid var(--color-border, #d4e1e6);
+  background: var(--color-surface, #fff);
+  padding: var(--space-lg, 1rem);
 }
 
 .state-card--success {
-  border-color: #9ad0b8;
-  background: #edf9f2;
+  border-color: var(--color-success, #9ad0b8);
+  background: var(--color-success-bg, #edf9f2);
   color: #21553f;
 }
 
 .state-card--error {
-  border-color: #edb9b9;
-  background: #fff1f1;
-  color: #7f2a2a;
+  border-color: var(--color-error-border, #edb9b9);
+  background: var(--color-error-bg, #fff1f1);
+  color: var(--color-error, #7f2a2a);
 }
 
 .orders-list {
@@ -99,10 +107,11 @@ select {
 }
 
 .order-card {
-  border: 1px solid #d6e2e8;
-  border-radius: 0.9rem;
-  background: #fff;
-  padding: 1rem;
+  border: 1px solid var(--color-border, #d6e2e8);
+  border-radius: var(--card-radius, 0.75rem);
+  background: var(--color-surface, #fff);
+  padding: var(--space-xl, 1.25rem);
+  box-shadow: var(--card-shadow, 0 1px 3px rgba(0, 0, 0, 0.06));
 }
 
 .order-card__header {

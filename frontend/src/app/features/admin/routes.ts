@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { AdminPageComponent } from './pages/admin-page.component';
 import { AdminProductsPageComponent } from './pages/admin-products-page.component';
 import { AdminProductFormPageComponent } from './pages/admin-product-form-page.component';
@@ -31,10 +31,10 @@ export const ADMIN_ROUTES: Routes = [
         path: 'pedidos',
         component: AdminOrdersPageComponent,
       },
+      {
+        path: 'rag',
+        component: RagSearchPageComponent,
+      },
     ],
-  },
-  {
-    path: 'rag',
-    component: RagSearchPageComponent,
   },
 ];

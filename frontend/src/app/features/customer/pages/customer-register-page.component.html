@@ -20,8 +20,11 @@
         <input type="text" formControlName="fullName" placeholder="Digite seu nome completo" />
       </label>
       <label>
-        CPF (somente números)
-        <input type="text" formControlName="cpf" placeholder="00000000000" maxlength="11" />
+        CPF
+        <input type="text" formControlName="cpf" placeholder="000.000.000-00" appCpfMask />
+        @if (hasError('cpf')) {
+          <span class="field-error">{{ getControlMessage('cpf') }}</span>
+        }
       </label>
       <label>
         Data de nascimento
@@ -30,10 +33,16 @@
       <label>
         E-mail
         <input type="email" formControlName="email" placeholder="voce@exemplo.com" autocomplete="email" />
+        @if (hasError('email')) {
+          <span class="field-error">{{ getControlMessage('email') }}</span>
+        }
       </label>
       <label>
         Telefone
-        <input type="text" formControlName="phone" placeholder="11999998888" maxlength="11" />
+        <input type="text" formControlName="phone" placeholder="(11) 99999-9999" appPhoneMask />
+        @if (hasError('phone')) {
+          <span class="field-error">{{ getControlMessage('phone') }}</span>
+        }
       </label>
       <label>
         Senha

@@ -1,6 +1,8 @@
-﻿<section class="admin-layout">
+<section class="admin-layout">
   <aside class="admin-sidebar" aria-label="Menu administrativo">
-    <h1 class="brand">JJ Store Admin</h1>
+    <a routerLink="/admin" class="sidebar-brand" aria-label="JJ Store Admin - início">
+      <img src="/JJ-store-logo.png" alt="JJ Store" class="sidebar-logo" width="120" height="40" />
+    </a>
     <p class="brand-subtitle">Gestão de catálogo, pedidos e inventário</p>
 
     <nav class="admin-nav">
@@ -8,14 +10,20 @@
         Produtos
       </a>
       <a routerLink="/admin/pedidos" routerLinkActive="active">Pedidos</a>
+      <a routerLink="/admin/rag" routerLinkActive="active">RAG</a>
     </nav>
   </aside>
 
   <div class="admin-content-area">
     <header class="admin-topbar">
-      <div>
-        <p class="topbar-caption">Área administrativa</p>
-        <h2>Olá, {{ authService.usuario()?.nomeExibicao }}</h2>
+      <div class="topbar-left">
+        <a routerLink="/admin" class="topbar-logo-link" aria-label="JJ Store">
+          <img src="/JJ-store-logo.png" alt="JJ Store" class="topbar-logo" width="100" height="32" />
+        </a>
+        <div>
+          <p class="topbar-caption">Área administrativa</p>
+          <h2 class="topbar-greeting">Olá, {{ authService.usuario()?.nomeExibicao }}</h2>
+        </div>
       </div>
 
       <button type="button" class="logout-button" (click)="logout()">Sair</button>

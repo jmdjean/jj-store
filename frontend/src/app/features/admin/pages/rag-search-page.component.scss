@@ -1,28 +1,111 @@
 .rag-page {
-  padding: 1rem;
-  border-radius: 0.9rem;
-  border: 1px solid #d8e6f5;
-  background: #f6fbff;
+  padding: var(--space-2xl, 1.5rem);
+  border-radius: var(--card-radius, 0.75rem);
+  border: 1px solid var(--color-border, #d8e6f5);
+  background: var(--color-surface, #fff);
+  box-shadow: var(--card-shadow, 0 1px 3px rgba(0, 0, 0, 0.06));
+}
+
+.rag-page h2 {
+  margin: 0 0 var(--space-lg, 1rem);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1d21);
 }
 
 .rag-form {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--space-lg, 1rem);
+  margin-bottom: var(--space-xl, 1.25rem);
+}
+
+.rag-form label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs, 0.25rem);
+  color: var(--color-text-secondary, #4a5568);
+  font-size: 0.9375rem;
 }
 
 textarea,
 input[type='number'] {
   width: 100%;
+  border: 1px solid var(--color-border, #c3d5dd);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
 }
 
 fieldset {
-  border: 1px solid #d8e6f5;
-  padding: 0.75rem;
+  border: 1px solid var(--color-border, #d8e6f5);
+  border-radius: 0.5rem;
+  padding: var(--space-lg, 1rem);
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-sm, 0.5rem);
+}
+
+fieldset legend {
+  font-weight: 600;
+  color: var(--color-text-secondary, #4a5568);
+  font-size: 0.9375rem;
+}
+
+.rag-form button {
+  min-height: var(--touch-min, 44px);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  background: var(--color-primary, #0d7377);
+  color: var(--color-primary-foreground, #fff);
+  border: none;
+  cursor: pointer;
+}
+
+.rag-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .error {
-  color: #b42318;
+  color: var(--color-error, #b42318);
+  margin: 0 0 var(--space-sm, 0.5rem);
+}
+
+.message {
+  color: var(--color-text-secondary, #4a5568);
+  margin: 0 0 var(--space-lg, 1rem);
+}
+
+.results {
+  margin-top: var(--space-xl, 1.25rem);
+  padding-top: var(--space-xl, 1.25rem);
+  border-top: 1px solid var(--color-border, #e2e8f0);
+}
+
+.results h3 {
+  margin: 0 0 var(--space-md, 0.75rem);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1d21);
+}
+
+.results ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-lg, 1rem);
+}
+
+.results li {
+  padding: var(--space-lg, 1rem);
+  border-radius: var(--card-radius, 0.75rem);
+  border: 1px solid var(--color-border, #e2e8f0);
+  background: var(--color-surface-elevated, #f8fafc);
+}
+
+.results li p {
+  margin: 0.25rem 0;
+  font-size: 0.9375rem;
 }

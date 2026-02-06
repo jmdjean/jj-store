@@ -1,13 +1,17 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { CpfMaskDirective } from '../../../core/directives/cpf-mask.directive';
+import { PhoneMaskDirective } from '../../../core/directives/phone-mask.directive';
+import { cpfValidator } from '../../../core/validators/cpf.validator';
+import { phoneValidator } from '../../../core/validators/phone.validator';
 import { CustomerProfileFacade } from '../facade/customer-profile.facade';
 import type { RegisterCustomerPayload } from '../models/customer-profile.models';
 
 @Component({
   selector: 'app-customer-register-page',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, CpfMaskDirective, PhoneMaskDirective],
   templateUrl: './customer-register-page.component.html',
   styleUrl: './customer-register-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,10 +24,10 @@ export class CustomerRegisterPageComponent {
 
   protected readonly registerForm = this.formBuilder.nonNullable.group({
     fullName: ['', [Validators.required, Validators.minLength(3)]],
-    cpf: ['', [Validators.required, Validators.pattern(/^\d{11}$/)]],
+    cpf: ['', [Validators.required, cpfValidator()]],
     birthDate: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
-    phone: ['', [Validators.pattern(/^\d{10,11}$/)]],
+    phone: ['', [phoneValidator()]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     street: ['', [Validators.required]],
     streetNumber: ['', [Validators.required]],
@@ -71,16 +75,37 @@ export class CustomerRegisterPageComponent {
     return control.invalid && (control.dirty || control.touched);
   }
 
+  // Returns pt-BR validation message for a control (CPF, phone, email or generic).
+  protected getControlMessage(controlName: keyof typeof this.registerForm.controls): string {
+    const control = this.registerForm.controls[controlName];
+    if (control.hasError('cpf') && control.getError('cpf')?.message) {
+      return control.getError('cpf').message as string;
+    }
+    if (control.hasError('phone') && control.getError('phone')?.message) {
+      return control.getError('phone').message as string;
+    }
+    if (control.hasError('email')) {
+      return 'Informe um e-mail válido.';
+    }
+    if (control.hasError('required')) {
+      return 'Campo obrigatório.';
+    }
+    if (control.hasError('minlength')) {
+      return 'O valor informado é muito curto.';
+    }
+    return 'Valor inválido.';
+  }
+
   // Maps the registration form values to the API payload structure.
   private toRegisterPayload(): RegisterCustomerPayload {
     const values = this.registerForm.getRawValue();
 
     return {
       fullName: values.fullName.trim(),
-      cpf: values.cpf.replace(/\D/g, ''),
+      cpf: (values.cpf ?? '').replace(/\D/g, ''),
       birthDate: values.birthDate,
       email: values.email.trim(),
-      phone: values.phone.trim() || undefined,
+      phone: (values.phone ?? '').replace(/\D/g, '').trim() || undefined,
       password: values.password,
       address: {
         street: values.street.trim(),

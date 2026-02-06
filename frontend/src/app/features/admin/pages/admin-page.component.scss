@@ -1,93 +1,165 @@
-﻿:host {
+/* Admin layout: design tokens aligned with global styles */
+:host {
   display: block;
   min-height: 100vh;
 }
+
+$admin-sidebar-bg: #073b4c;
+$admin-sidebar-active: #0e5a73;
+$admin-sidebar-text: #f2f8fb;
+$admin-sidebar-muted: #b8d9e8;
+$admin-topbar-bg: rgba(255, 255, 255, 0.97);
+$admin-topbar-border: #d7e6ea;
+$admin-content-bg: #f0f4f8;
 
 .admin-layout {
   display: grid;
   grid-template-columns: 260px 1fr;
   min-height: 100vh;
-  background: linear-gradient(135deg, #edf6ff 0%, #f8f5ea 100%);
+  background: $admin-content-bg;
 }
 
 .admin-sidebar {
-  padding: 2rem 1.5rem;
-  background: #073b4c;
-  color: #f2f8fb;
+  padding: var(--space-2xl, 1.5rem) var(--space-xl, 1.25rem);
+  background: $admin-sidebar-bg;
+  color: $admin-sidebar-text;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
 }
 
-.brand {
-  margin: 0;
-  font-size: 1.25rem;
-  letter-spacing: 0.04em;
+.sidebar-brand {
+  display: block;
+  margin-bottom: var(--space-sm, 0.5rem);
+  text-decoration: none;
+}
+
+.sidebar-logo {
+  display: block;
+  height: 2.25rem;
+  width: auto;
+  max-width: 140px;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .brand-subtitle {
-  margin: 0.75rem 0 2rem;
-  color: #b8d9e8;
-  font-size: 0.95rem;
+  margin: 0 0 var(--space-2xl, 1.5rem);
+  color: $admin-sidebar-muted;
+  font-size: 0.875rem;
+  line-height: 1.35;
 }
 
 .admin-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-xs, 0.25rem);
 }
 
 .admin-nav a {
-  padding: 0.75rem 0.8rem;
+  padding: 0.75rem 0.875rem;
   color: #d2e8f2;
   text-decoration: none;
-  border-radius: 0.65rem;
+  border-radius: 0.5rem;
   font-weight: 500;
-  transition: background-color 0.2s ease;
+  font-size: 0.9375rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  min-height: var(--touch-min, 44px);
+  display: flex;
+  align-items: center;
 }
 
 .admin-nav a.active,
 .admin-nav a:hover {
-  background: #0e5a73;
+  background: $admin-sidebar-active;
   color: #fff;
 }
 
+.admin-nav a:focus-visible {
+  outline: 2px solid $admin-sidebar-muted;
+  outline-offset: 2px;
+}
+
 .admin-content-area {
-  padding: 1.5rem;
+  padding: var(--space-2xl, 1.5rem);
+  max-width: 1600px;
+  width: 100%;
+  justify-self: center;
 }
 
 .admin-topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  padding: 1.25rem 1.5rem;
-  border-radius: 1rem;
-  background: #ffffffcc;
-  border: 1px solid #d7e6ea;
+  gap: var(--space-xl, 1.25rem);
+  padding: var(--space-xl, 1.25rem) var(--space-2xl, 1.5rem);
+  border-radius: var(--card-radius, 0.75rem);
+  background: $admin-topbar-bg;
+  border: 1px solid $admin-topbar-border;
+  box-shadow: var(--card-shadow, 0 1px 3px rgba(0, 0, 0, 0.06));
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg, 1rem);
+}
+
+.topbar-logo-link {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.topbar-logo {
+  display: block;
+  height: 2rem;
+  width: auto;
+  max-width: 100px;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .topbar-caption {
   margin: 0;
-  color: #4b6a74;
-  font-size: 0.82rem;
+  color: var(--color-text-muted, #4b6a74);
+  font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
+  font-weight: 600;
 }
 
-.admin-topbar h2 {
-  margin: 0.2rem 0 0;
-  color: #1c2a30;
+.topbar-greeting {
+  margin: 0.15rem 0 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #1c2a30);
 }
 
 .logout-button {
-  border: 1px solid #c6d6db;
+  border: 1px solid var(--color-border, #c6d6db);
   background: #fff;
-  color: #1f3a44;
-  border-radius: 0.6rem;
-  padding: 0.55rem 0.9rem;
+  color: var(--color-text-primary, #1f3a44);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
   cursor: pointer;
+  min-height: var(--touch-min, 44px);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.logout-button:hover {
+  background: var(--color-surface-elevated, #f8fafc);
+  border-color: var(--color-border-strong, #cbd5e1);
+}
+
+.logout-button:focus-visible {
+  outline: 2px solid var(--color-primary, #0d7377);
+  outline-offset: 2px;
 }
 
 .admin-content {
-  margin-top: 1rem;
+  margin-top: var(--space-xl, 1.25rem);
 }
 
 @media (max-width: 920px) {
@@ -96,10 +168,15 @@
   }
 
   .admin-sidebar {
-    padding: 1.2rem;
+    padding: var(--space-lg, 1rem);
   }
 
   .admin-content-area {
-    padding: 1rem;
+    padding: var(--space-lg, 1rem);
+  }
+
+  .topbar-logo {
+    height: 1.75rem;
+    max-width: 88px;
   }
 }

@@ -25,7 +25,7 @@
     <div class="grid">
       <label>
         CPF
-        <input type="text" formControlName="cpf" readonly />
+        <input type="text" formControlName="cpf" readonly aria-readonly="true" />
       </label>
       <label>
         Nome completo
@@ -38,10 +38,16 @@
       <label>
         E-mail
         <input type="email" formControlName="email" />
+        @if (hasError('email')) {
+          <span class="field-error">{{ getControlMessage('email') }}</span>
+        }
       </label>
       <label>
         Telefone
-        <input type="text" formControlName="phone" />
+        <input type="text" formControlName="phone" placeholder="(11) 99999-9999" appPhoneMask />
+        @if (hasError('phone')) {
+          <span class="field-error">{{ getControlMessage('phone') }}</span>
+        }
       </label>
       <label>
         Rua

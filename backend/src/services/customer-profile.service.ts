@@ -266,7 +266,7 @@ export class CustomerProfileService {
     };
   }
 
-  // Normalizes optional phone number to digits only and validates length (10-11 digits).
+  // Normalizes optional phone to digits only; validates length, DDD (11–99), and cell 9th digit.
   private normalizeOptionalPhone(phone: string | undefined): string | null {
     const normalizedPhone = this.normalizeOptionalText(phone);
 
@@ -276,8 +276,20 @@ export class CustomerProfileService {
 
     const digits = normalizedPhone.replace(/\D/g, '');
 
-    if (digits.length < 10 || digits.length > 11) {
-      throw new AppError(400, 'Informe um telefone válido.');
+    if (digits.length !== 10 && digits.length !== 11) {
+      throw new AppError(400, 'Informe um telefone com 10 ou 11 dígitos.');
+    }
+
+    const ddd = Number(digits.slice(0, 2));
+    if (ddd < 11 || ddd > 99) {
+      throw new AppError(400, 'Informe um DDD válido (11 a 99).');
+    }
+
+    if (digits.length === 11) {
+      const ninth = Number(digits[2]);
+      if (ninth !== 9) {
+        throw new AppError(400, 'Celular deve começar com 9 após o DDD.');
+      }
     }
 
     return digits;

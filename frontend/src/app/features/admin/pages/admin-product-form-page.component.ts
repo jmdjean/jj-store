@@ -1,14 +1,15 @@
-﻿import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
+import { CurrencyMaskDirective } from '../../../core/directives/currency-mask.directive';
 import { AdminProductsFacade } from '../facade/admin-products.facade';
 import type { AdminProduct, AdminProductPayload } from '../models/admin-products.models';
 
 @Component({
   selector: 'app-admin-product-form-page',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, CurrencyMaskDirective],
   templateUrl: './admin-product-form-page.component.html',
   styleUrl: './admin-product-form-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

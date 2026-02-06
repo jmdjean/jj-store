@@ -1,4 +1,4 @@
-﻿<section class="product-form-page" aria-labelledby="product-form-title">
+<section class="product-form-page" aria-labelledby="product-form-title">
   <header class="page-header">
     <h1 id="product-form-title">{{ isEditMode() ? 'Editar produto' : 'Novo produto' }}</h1>
     <p>
@@ -60,7 +60,7 @@
     <div class="grid-two-columns">
       <label>
         Preço de custo
-        <input type="number" min="0" step="0.01" formControlName="purchasePrice" />
+        <input type="text" inputmode="decimal" formControlName="purchasePrice" appCurrencyMask />
         @if (hasFieldError('purchasePrice')) {
           <span class="field-error">{{ getFieldError('purchasePrice') }}</span>
         }
@@ -68,7 +68,7 @@
 
       <label>
         Preço de venda
-        <input type="number" min="0" step="0.01" formControlName="salePrice" />
+        <input type="text" inputmode="decimal" formControlName="salePrice" appCurrencyMask />
         @if (hasFieldError('salePrice')) {
           <span class="field-error">{{ getFieldError('salePrice') }}</span>
         }
