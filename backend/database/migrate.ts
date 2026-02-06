@@ -42,7 +42,8 @@ async function runMigrations(): Promise<void> {
         continue;
       }
 
-      const sql = await readFile(join(migrationsDir, file), 'utf-8');
+      let sql = await readFile(join(migrationsDir, file), 'utf-8');
+      if (sql.charCodeAt(0) === 0xfeff) sql = sql.slice(1);
 
       console.log(`[migrate] applying: ${file}`);
       await client.query('BEGIN');
