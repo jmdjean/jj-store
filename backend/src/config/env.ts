@@ -2,9 +2,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const embeddingDimensionValue = Number(process.env.EMBEDDING_DIM ?? 8);
+const embeddingDimensionValue = Number(process.env.EMBEDDING_DIM ?? 1536);
 const embeddingDimension =
-  Number.isFinite(embeddingDimensionValue) && embeddingDimensionValue > 0 ? embeddingDimensionValue : 8;
+  Number.isFinite(embeddingDimensionValue) && embeddingDimensionValue > 0 ? embeddingDimensionValue : 1536;
 const embeddingsTimeoutValue = Number(process.env.EMBEDDINGS_TIMEOUT_MS ?? 8000);
 const embeddingsTimeoutMs =
   Number.isFinite(embeddingsTimeoutValue) && embeddingsTimeoutValue > 0 ? embeddingsTimeoutValue : 8000;

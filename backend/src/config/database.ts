@@ -19,13 +19,16 @@ export async function runQuery<T extends QueryResultRow>(
   return result.rows;
 }
 
-// Loads the embedding dimension configured in the rag_documents table.
+// Loads the embedding dimension from the rag_documents.embedding column.
+// pgvector stores the dimension in atttypmod (no offset).
 export async function getRagEmbeddingDimension(): Promise<number | null> {
   const rows = await runQuery<{ dimension: number | null }>(`
-    SELECT NULLIF(atttypmod, -1) - 4 AS dimension
+    SELECT NULLIF(atttypmod, -1)::int AS dimension
     FROM pg_attribute
     WHERE attrelid = 'rag_documents'::regclass
       AND attname = 'embedding'
+      AND attnum > 0
+      AND NOT attisdropped
   `);
   const dimension = rows[0]?.dimension ?? null;
 
