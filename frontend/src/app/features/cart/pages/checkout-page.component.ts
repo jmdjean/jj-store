@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { StoreHeaderComponent } from '../../catalog/components/store-header/store-header.component';
 import { CartFacade } from '../facade/cart.facade';
 
 @Component({
   selector: 'app-checkout-page',
   standalone: true,
-  imports: [StoreHeaderComponent, RouterLink],
+  imports: [StoreHeaderComponent],
   templateUrl: './checkout-page.component.html',
   styleUrl: './checkout-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,6 +41,10 @@ export class CheckoutPageComponent implements OnInit {
     }
 
     this.cartFacade.checkout().subscribe({
+      next: () => {
+        this.cartFacade.setCartFeedback('Compra finalizada com sucesso.');
+        void this.router.navigate(['/']);
+      },
       error: (error: unknown) => {
         this.cartFacade.checkoutError.set(
           this.cartFacade.getApiErrorMessage(error, 'Não foi possível concluir a compra agora.'),
@@ -52,11 +56,6 @@ export class CheckoutPageComponent implements OnInit {
   // Navigates back to cart page for quantity adjustments.
   protected backToCart(): void {
     void this.router.navigateByUrl('/carrinho');
-  }
-
-  // Navigates user back to catalog after checkout confirmation.
-  protected goToCatalog(): void {
-    void this.router.navigateByUrl('/');
   }
 
   // Formats price values using BRL currency conventions.

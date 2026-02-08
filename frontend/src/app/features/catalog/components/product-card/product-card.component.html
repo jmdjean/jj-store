@@ -1,4 +1,4 @@
-﻿<article class="product-card">
+<a class="product-card" [routerLink]="['/produtos', product.id]">
   <img
     class="product-image"
     [src]="product.imageUrl || 'https://placehold.co/600x400/f8efe5/8e6e4f?text=Sem+Imagem'"
@@ -17,12 +17,6 @@
       <strong>{{ formatPrice(product.price) }}</strong>
       <small>{{ product.available ? 'Disponível' : 'Indisponível' }}</small>
     </div>
-
-    <div class="actions">
-      <button type="button" [disabled]="!product.available" (click)="addProductToCart()">
-        Adicionar
-      </button>
-      <a [routerLink]="['/produtos', product.id]">Ver detalhes</a>
-    </div>
+    <span class="details-link">Ver detalhes</span>
   </footer>
-</article>
+</a>

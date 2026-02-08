@@ -56,6 +56,11 @@ export class CartFacade {
     this.cartFeedback.set('Item removido do carrinho.');
   }
 
+  // Updates cart feedback message for cross-screen notifications.
+  setCartFeedback(message: string): void {
+    this.cartFeedback.set(message);
+  }
+
   // Clears cart content and resets checkout state after successful order creation.
   clearCart(): void {
     this.cartService.clear();

@@ -1,27 +1,22 @@
 .detail-page {
+  background: var(--color-background);
+}
+
+.detail-container {
+  max-width: var(--store-container-max);
+  margin: 0 auto;
+  padding: var(--space-2xl) var(--store-container-padding) var(--space-4xl);
   display: grid;
-  gap: var(--space-2xl);
+  gap: var(--space-xl);
 }
 
 .back-link {
-  justify-self: start;
-  min-height: var(--touch-min);
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 0.5rem;
-  background: var(--color-surface);
-  color: var(--color-text-primary);
+  border: none;
+  background: transparent;
   font: inherit;
-  padding: var(--space-sm) var(--space-lg);
+  color: var(--color-text-secondary);
   cursor: pointer;
-  text-decoration: none;
-  transition: border-color 0.2s ease, background 0.2s ease;
-
-  &:hover {
-    border-color: var(--color-primary);
-    background: var(--color-surface-elevated);
-  }
+  justify-self: flex-start;
 }
 
 .state-card {
@@ -31,7 +26,6 @@
   padding: var(--card-padding);
   text-align: center;
   color: var(--color-text-secondary);
-  box-shadow: var(--card-shadow);
 
   &--error {
     border-color: var(--color-error-border);
@@ -42,83 +36,109 @@
 
 .product-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
   gap: var(--space-2xl);
-  border-radius: var(--card-radius);
-  border: var(--card-border);
+  align-items: start;
   background: var(--color-surface);
-  padding: var(--card-padding);
-  box-shadow: var(--card-shadow);
+  border-radius: 1.5rem;
+  padding: var(--space-2xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.gallery {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.main-image {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  border-radius: 1rem;
+}
+
+.thumbs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-sm);
 
   img {
     width: 100%;
-    border-radius: 0.5rem;
+    height: 110px;
     object-fit: cover;
-    aspect-ratio: 4 / 3;
-    background: var(--color-surface-elevated);
+    border-radius: 0.75rem;
   }
 }
 
 .content {
-  .category {
-    display: inline-flex;
-    margin-bottom: var(--space-sm);
-    border-radius: 999px;
-    padding: var(--space-xs) var(--space-md);
-    background: var(--color-success-bg);
-    color: var(--color-success);
-    font-size: 0.8rem;
-    font-weight: 600;
-  }
+  display: grid;
+  gap: var(--space-md);
 
   h1 {
     margin: 0;
-    color: var(--color-text-primary);
-    font-size: clamp(1.5rem, 3vw, 2.1rem);
-  }
-
-  p {
-    color: var(--color-text-secondary);
-    line-height: 1.5;
-  }
-
-  ul {
-    padding-left: var(--space-xl);
-    color: var(--color-text-secondary);
-  }
-
-  .price {
-    margin: var(--space-xl) 0 var(--space-lg);
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--color-success);
+    font-size: clamp(1.6rem, 2.5vw, 2.2rem);
   }
 
   button {
     min-height: var(--touch-min);
     border: none;
-    border-radius: 0.5rem;
-    background: var(--color-accent);
-    color: var(--color-accent-foreground);
-    font: inherit;
+    border-radius: 999px;
+    background: var(--color-text-primary);
+    color: var(--color-surface);
     font-weight: 600;
-    padding: var(--space-md) var(--space-xl);
+    font-size: 1rem;
     cursor: pointer;
-    transition: background 0.2s ease;
-
-    &:hover:not(:disabled) {
-      background: var(--color-accent-hover);
-    }
   }
 
-  button[disabled] {
-    opacity: 0.55;
+  button:disabled {
+    background: var(--color-border-strong);
     cursor: not-allowed;
   }
 }
 
-@media (max-width: 840px) {
+.category {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+  background: #f2f4f8;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+
+  span {
+    display: block;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+
+  strong {
+    font-size: 1rem;
+  }
+}
+
+.price {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
   .product-layout {
     grid-template-columns: 1fr;
+  }
+
+  .main-image {
+    height: 320px;
   }
 }

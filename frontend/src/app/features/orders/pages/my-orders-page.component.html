@@ -1,71 +1,69 @@
 <section class="orders-page">
-  <app-store-header
-    [searchValue]="''"
-    [cartItems]="0"
-    (searchChange)="onSearch($event)"
-  />
+  <app-store-header [searchValue]="''" [showSearchAction]="false" [showCustomerMenu]="true" />
 
-  <header class="page-header">
-    <h1>Minhas compras</h1>
-    <p>Acompanhe seus pedidos e cancele quando estiver dentro do prazo.</p>
-  </header>
+  <div class="orders-container">
+    <header class="page-header">
+      <h1>Pedidos</h1>
+      <p>Acompanhe seus pedidos e veja o status das entregas.</p>
+    </header>
 
-  @if (myOrdersFacade.successMessage()) {
-    <div class="state-card state-card--success" role="status">{{ myOrdersFacade.successMessage() }}</div>
-  }
+    @if (myOrdersFacade.successMessage()) {
+      <div class="state-card state-card--success" role="status">
+        {{ myOrdersFacade.successMessage() }}
+      </div>
+    }
 
-  @if (myOrdersFacade.loading()) {
-    <div class="state-card" role="status">Carregando suas compras...</div>
-  } @else if (myOrdersFacade.error()) {
-    <div class="state-card state-card--error" role="alert">{{ myOrdersFacade.error() }}</div>
-  } @else if (myOrdersFacade.orders().length === 0) {
-    <div class="state-card" role="status">
-      <p>Você ainda não possui pedidos.</p>
-      <a routerLink="/">Explorar catálogo</a>
-    </div>
-  } @else {
-    <ul class="orders-list" aria-label="Lista de pedidos">
-      @for (order of myOrdersFacade.orders(); track order.id) {
-        <li class="order-card">
-          <div class="order-card__header">
-            <h2>Pedido {{ order.id }}</h2>
-            <span
-              class="status-badge"
-              [class]="'status-badge status-badge--' + myOrdersFacade.getStatusClass(order.status)"
-            >
-              {{ myOrdersFacade.getStatusLabel(order.status) }}
-            </span>
-          </div>
-
-          <p><strong>Data:</strong> {{ formatDate(order.createdAt) }}</p>
-          <p><strong>Itens:</strong> {{ order.itemsCount }}</p>
-          <p><strong>Total:</strong> {{ formatCurrency(order.totalAmountCents) }}</p>
-
-          <div class="order-card__actions">
-            <a [routerLink]="['/minhas-compras', order.id]">Ver detalhes</a>
-
-            @if (order.canCancel) {
-              <button
-                type="button"
-                [disabled]="myOrdersFacade.isCanceling(order.id)"
-                (click)="cancelOrder(order.id)"
+    @if (myOrdersFacade.loading()) {
+      <div class="state-card" role="status">Carregando suas compras...</div>
+    } @else if (myOrdersFacade.error()) {
+      <div class="state-card state-card--error" role="alert">{{ myOrdersFacade.error() }}</div>
+    } @else if (myOrdersFacade.orders().length === 0) {
+      <div class="state-card" role="status">
+        <p>Você ainda não possui pedidos.</p>
+        <a routerLink="/">Explorar catálogo</a>
+      </div>
+    } @else {
+      <div class="orders-grid" aria-label="Lista de pedidos">
+        @for (order of myOrdersFacade.orders(); track order.id) {
+          <article class="order-card">
+            <div class="order-card__status">
+              <span
+                class="status-badge"
+                [class]="'status-badge status-badge--' + myOrdersFacade.getStatusClass(order.status)"
               >
-                {{ myOrdersFacade.isCanceling(order.id) ? 'Cancelando...' : 'Cancelar' }}
-              </button>
-            }
-          </div>
-        </li>
-      }
-    </ul>
+                {{ myOrdersFacade.getStatusLabel(order.status) }}
+              </span>
+              <span class="order-date">{{ formatDate(order.createdAt) }}</span>
+            </div>
 
-    <nav class="pagination" aria-label="Paginação de pedidos">
-      <button type="button" [disabled]="!canGoToPreviousPage()" (click)="goToPreviousPage()">
-        Anterior
-      </button>
-      <span>
-        Página {{ myOrdersFacade.paginationMeta().page }} de {{ myOrdersFacade.paginationMeta().totalPages }}
-      </span>
-      <button type="button" [disabled]="!canGoToNextPage()" (click)="goToNextPage()">Próxima</button>
-    </nav>
-  }
+            <img
+              src="https://placehold.co/500x520/f5f5f5/9f9f9f?text=Pedido"
+              alt="Pedido {{ order.id }}"
+            />
+
+            <div class="order-card__content">
+              <p><strong>{{ order.itemsCount }} itens</strong></p>
+              <p>Pedido {{ order.id }}</p>
+              <p class="order-total">{{ formatCurrency(order.totalAmountCents) }}</p>
+            </div>
+
+            <div class="order-card__actions">
+              <a [routerLink]="['/minhas-compras', order.id]">Ver detalhes</a>
+              <button type="button" (click)="goToCatalog()">Comprar novamente</button>
+            </div>
+          </article>
+        }
+      </div>
+
+      <nav class="pagination" aria-label="Paginação de pedidos">
+        <button type="button" [disabled]="!canGoToPreviousPage()" (click)="goToPreviousPage()">
+          Anterior
+        </button>
+        <span>
+          Página {{ myOrdersFacade.paginationMeta().page }} de {{ myOrdersFacade.paginationMeta().totalPages }}
+        </span>
+        <button type="button" [disabled]="!canGoToNextPage()" (click)="goToNextPage()">Próxima</button>
+      </nav>
+    }
+  </div>
 </section>

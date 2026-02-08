@@ -5,7 +5,6 @@ import { ProductCardComponent } from '../components/product-card/product-card.co
 import { StoreHeaderComponent } from '../components/store-header/store-header.component';
 import { CatalogFacade } from '../facade/catalog.facade';
 import { CartFacade } from '../../cart/facade/cart.facade';
-import type { CatalogProduct } from '../models/catalog.models';
 
 @Component({
   selector: 'app-catalog-page',
@@ -21,16 +20,12 @@ export class CatalogPageComponent implements OnInit {
   private readonly router = inject(Router);
   protected readonly facade = inject(CatalogFacade);
   protected readonly cartFacade = inject(CartFacade);
-  protected readonly categoryOptions = ['Acessórios', 'Casa', 'Eletrônicos', 'Eletroportáteis', 'Móveis'];
 
   protected readonly filtersForm = this.formBuilder.nonNullable.group({
     q: [''],
-    category: [''],
-    minPrice: [''],
-    maxPrice: [''],
   });
 
-  // Initializes filters from query params and loads the catalog.
+  // Initializes search from query params and loads the catalog.
   ngOnInit(): void {
     const querySearch = this.route.snapshot.queryParamMap.get('q') ?? '';
 
@@ -47,25 +42,8 @@ export class CatalogPageComponent implements OnInit {
     this.submitFilters();
   }
 
-  // Submits current filters and resets pagination to the first page.
+  // Submits current search and resets pagination to the first page.
   protected submitFilters(): void {
-    this.loadCatalogWithCurrentFilters(1);
-  }
-
-  // Clears all active filters and reloads the first catalog page.
-  protected clearFilters(): void {
-    this.filtersForm.reset({
-      q: '',
-      category: '',
-      minPrice: '',
-      maxPrice: '',
-    });
-
-    void this.router.navigate([], {
-      queryParams: {},
-      replaceUrl: true,
-    });
-
     this.loadCatalogWithCurrentFilters(1);
   }
 
@@ -80,14 +58,9 @@ export class CatalogPageComponent implements OnInit {
     this.loadCatalogWithCurrentFilters(page);
   }
 
-  // Adds a catalog product to the local cart and updates feedback state.
-  protected addToCart(product: CatalogProduct): void {
-    this.cartFacade.addCatalogProduct(product);
-  }
-
-  // Loads catalog data using current form filters and page selection.
+  // Loads catalog data using current search text and page selection.
   private loadCatalogWithCurrentFilters(page = this.facade.meta().page): void {
-    const { q, category, minPrice, maxPrice } = this.filtersForm.getRawValue();
+    const { q } = this.filtersForm.getRawValue();
 
     void this.router.navigate([], {
       queryParams: q ? { q } : {},
@@ -97,9 +70,6 @@ export class CatalogPageComponent implements OnInit {
     this.facade
       .loadCatalog({
         q,
-        category,
-        minPrice,
-        maxPrice,
         page,
       })
       .subscribe({

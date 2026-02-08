@@ -1,48 +1,68 @@
-﻿<section class="detail-page">
-  <app-store-header
-    [searchValue]="''"
-    [cartItems]="cartFacade.totalItems()"
-    (searchChange)="onSearch($event)"
-  />
+<section class="detail-page">
+  <app-store-header [searchValue]="''" (searchChange)="onSearch($event)" />
 
-  <button type="button" class="back-link" (click)="backToCatalog()">← Voltar para o catálogo</button>
+  <div class="detail-container">
+    <button type="button" class="back-link" (click)="backToCatalog()">← Voltar para o catálogo</button>
 
-  @if (cartFacade.cartFeedback()) {
-    <div class="state-card" role="status">{{ cartFacade.cartFeedback() }}</div>
-  }
+    @if (cartFacade.cartFeedback()) {
+      <div class="state-card" role="status">{{ cartFacade.cartFeedback() }}</div>
+    }
 
-  @if (facade.detailLoading()) {
-    <div class="state-card" role="status">Carregando produto...</div>
-  } @else if (facade.detailError()) {
-    <div class="state-card state-card--error" role="alert">
-      {{ facade.detailError() }}
-    </div>
-  } @else if (facade.selectedProduct(); as product) {
-    <article class="product-layout">
-      <img
-        [src]="product.imageUrl || 'https://placehold.co/900x700/f8efe5/8e6e4f?text=Sem+Imagem'"
-        [alt]="product.name"
-      />
-
-      <div class="content">
-        <span class="category">{{ product.category }}</span>
-        <h1>{{ product.name }}</h1>
-        <p>{{ product.description }}</p>
-
-        <ul>
-          <li><strong>Peso:</strong> {{ product.weightGrams ?? 0 }} g</li>
-          <li>
-            <strong>Disponibilidade:</strong>
-            {{ product.available ? product.stockQuantity + ' em estoque' : 'Indisponível no momento' }}
-          </li>
-        </ul>
-
-        <p class="price">{{ formatPrice(product.price) }}</p>
-
-        <button type="button" [disabled]="!product.available" (click)="addToCart()">
-          Adicionar ao carrinho
-        </button>
+    @if (facade.detailLoading()) {
+      <div class="state-card" role="status">Carregando produto...</div>
+    } @else if (facade.detailError()) {
+      <div class="state-card state-card--error" role="alert">
+        {{ facade.detailError() }}
       </div>
-    </article>
-  }
+    } @else if (facade.selectedProduct(); as product) {
+      <article class="product-layout">
+        <div class="gallery">
+          <img
+            class="main-image"
+            [src]="product.imageUrl || 'https://placehold.co/900x700/f8efe5/8e6e4f?text=Sem+Imagem'"
+            [alt]="product.name"
+          />
+          <div class="thumbs">
+            <img
+              [src]="product.imageUrl || 'https://placehold.co/300x300/f8efe5/8e6e4f?text=Imagem'"
+              [alt]="product.name"
+            />
+            <img
+              [src]="product.imageUrl || 'https://placehold.co/300x300/f8efe5/8e6e4f?text=Imagem'"
+              [alt]="product.name"
+            />
+            <img
+              [src]="product.imageUrl || 'https://placehold.co/300x300/f8efe5/8e6e4f?text=Imagem'"
+              [alt]="product.name"
+            />
+          </div>
+        </div>
+
+        <div class="content">
+          <span class="category">{{ product.category }}</span>
+          <h1>{{ product.name }}</h1>
+          <p class="description">{{ product.description }}</p>
+
+          <div class="details">
+            <div>
+              <span>Disponibilidade</span>
+              <strong>
+                {{ product.available ? product.stockQuantity + ' em estoque' : 'Indisponível no momento' }}
+              </strong>
+            </div>
+            <div>
+              <span>Peso</span>
+              <strong>{{ product.weightGrams ?? 0 }} g</strong>
+            </div>
+          </div>
+
+          <p class="price">{{ formatPrice(product.price) }}</p>
+
+          <button type="button" [disabled]="!product.available" (click)="addToCart()">
+            Adicionar ao carrinho
+          </button>
+        </div>
+      </article>
+    }
+  </div>
 </section>

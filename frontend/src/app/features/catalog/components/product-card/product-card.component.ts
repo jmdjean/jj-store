@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { CatalogProduct } from '../../models/catalog.models';
 
@@ -12,7 +12,6 @@ import type { CatalogProduct } from '../../models/catalog.models';
 })
 export class ProductCardComponent {
   @Input({ required: true }) product!: CatalogProduct;
-  @Output() readonly addToCart = new EventEmitter<CatalogProduct>();
 
   // Formats product prices using the BRL currency locale.
   protected formatPrice(price: number): string {
@@ -20,10 +19,5 @@ export class ProductCardComponent {
       style: 'currency',
       currency: 'BRL',
     }).format(price);
-  }
-
-  // Emits selected product data to parent components for cart insertion.
-  protected addProductToCart(): void {
-    this.addToCart.emit(this.product);
   }
 }

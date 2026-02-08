@@ -1,6 +1,7 @@
 ﻿import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { StoreHeaderComponent } from '../../catalog/components/store-header/store-header.component';
+import { AuthService } from '../../../core/services/auth.service';
 import { CartFacade } from '../facade/cart.facade';
 
 @Component({
@@ -13,6 +14,7 @@ import { CartFacade } from '../facade/cart.facade';
 })
 export class CartPageComponent {
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
   protected readonly cartFacade = inject(CartFacade);
 
   // Redirects search requests to catalog query route.
@@ -37,8 +39,15 @@ export class CartPageComponent {
     this.cartFacade.removeItem(productId);
   }
 
-  // Navigates user to checkout flow.
+  // Navigates user to checkout or customer login when required.
   protected goToCheckout(): void {
+    if (!this.authService.autenticado()) {
+      void this.router.navigate(['/login-cliente'], {
+        queryParams: { returnUrl: '/checkout' },
+      });
+      return;
+    }
+
     void this.router.navigateByUrl('/checkout');
   }
 
