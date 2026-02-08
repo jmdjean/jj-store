@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 import { CurrencyMaskDirective } from '../../../core/directives/currency-mask.directive';
 import { AdminProductsFacade } from '../facade/admin-products.facade';
+import { AdminProductCategoriesFacade } from '../facade/admin-product-categories.facade';
 import type { AdminProduct, AdminProductPayload } from '../models/admin-products.models';
 
 @Component({
@@ -20,14 +21,26 @@ export class AdminProductFormPageComponent implements OnInit {
   private readonly router = inject(Router);
 
   protected readonly adminProductsFacade = inject(AdminProductsFacade);
+  protected readonly adminProductCategoriesFacade = inject(AdminProductCategoriesFacade);
   protected readonly productId = signal<string | null>(null);
+  protected readonly categorySearch = signal('');
 
   protected readonly isEditMode = computed(() => Boolean(this.productId()));
+  protected readonly filteredCategories = computed(() => {
+    const searchValue = this.categorySearch().trim().toLowerCase();
+    const categories = this.adminProductCategoriesFacade.categories();
+
+    if (!searchValue) {
+      return categories;
+    }
+
+    return categories.filter((category) => category.name.toLowerCase().includes(searchValue));
+  });
 
   protected readonly productForm = this.formBuilder.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(180)]],
     description: ['', [Validators.required, Validators.maxLength(2000)]],
-    category: ['', [Validators.required, Validators.maxLength(80)]],
+    categoryId: ['', [Validators.required]],
     quantity: [0, [Validators.required, Validators.min(0)]],
     weightGrams: [null as number | null, [Validators.min(0)]],
     purchasePrice: [0, [Validators.required, Validators.min(0)]],
@@ -37,6 +50,7 @@ export class AdminProductFormPageComponent implements OnInit {
 
   // Reads route params and preloads product data when editing.
   ngOnInit(): void {
+    this.loadCategories();
     const currentProductId = this.route.snapshot.paramMap.get('id');
 
     if (!currentProductId) {
@@ -112,18 +126,32 @@ export class AdminProductFormPageComponent implements OnInit {
     });
   }
 
+  // Loads available product categories to populate the combo list.
+  private loadCategories(): void {
+    this.adminProductCategoriesFacade.loadCategories().subscribe({
+      error: (error) => {
+        this.adminProductCategoriesFacade.error.set(
+          this.adminProductCategoriesFacade.getApiErrorMessage(
+            error,
+            'Não foi possível carregar as categorias. Tente novamente.',
+          ),
+        );
+      },
+    });
+  }
+
   // Builds API payload from typed form values.
   private buildPayload(): AdminProductPayload | null {
     const formValue = this.productForm.getRawValue();
 
-    if (!formValue.name || !formValue.description || !formValue.category) {
+    if (!formValue.name || !formValue.description || !formValue.categoryId) {
       return null;
     }
 
     return {
       name: formValue.name,
       description: formValue.description,
-      category: formValue.category,
+      categoryId: formValue.categoryId,
       quantity: formValue.quantity,
       weightGrams: formValue.weightGrams,
       purchasePrice: formValue.purchasePrice,
@@ -183,12 +211,19 @@ export class AdminProductFormPageComponent implements OnInit {
     this.productForm.patchValue({
       name: product.name,
       description: product.description,
-      category: product.category,
+      categoryId: product.categoryId,
       quantity: product.stockQuantity,
       weightGrams: product.weightGrams,
       purchasePrice: product.purchasePrice,
       salePrice: product.salePrice,
       imageUrl: product.imageUrl ?? '',
     });
+
+    this.categorySearch.set(product.categoryName);
+  }
+
+  // Updates category search input to filter the combo list.
+  protected updateCategorySearch(value: string): void {
+    this.categorySearch.set(value);
   }
 }

@@ -3,7 +3,8 @@
   slug: string;
   name: string;
   description: string;
-  category: string;
+  categoryId: string;
+  categoryName: string;
   imageUrl: string | null;
   purchasePrice: number;
   salePrice: number;
@@ -23,7 +24,7 @@ export type AdminProductsFiltersInput = {
 export type AdminProductPayloadInput = {
   name?: string;
   description?: string;
-  category?: string;
+  categoryId?: string;
   quantity?: unknown;
   weightGrams?: unknown;
   purchasePrice?: unknown;

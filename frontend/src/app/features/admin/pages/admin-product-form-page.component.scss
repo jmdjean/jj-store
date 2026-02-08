@@ -40,11 +40,13 @@ label {
 }
 
 input,
-textarea {
+textarea,
+select {
   border: 1px solid #c3d5dd;
   border-radius: 0.62rem;
   padding: 0.58rem 0.65rem;
   font: inherit;
+  background: #fff;
 }
 
 textarea {
@@ -59,6 +61,11 @@ textarea {
 
 .field-error {
   color: #ab2b2b;
+  font-size: 0.79rem;
+}
+
+.field-hint {
+  color: #58707a;
   font-size: 0.79rem;
 }
 

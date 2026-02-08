@@ -11,6 +11,8 @@ type AdminProductDatabaseRecord = {
   slug: string;
   name: string;
   description: string;
+  category_id: string;
+  category_name: string | null;
   category: string;
   image_url: string | null;
   purchase_price_cents: number;
@@ -27,6 +29,8 @@ export type AdminProductSnapshot = {
   slug: string;
   name: string;
   description: string;
+  categoryId: string;
+  categoryName: string;
   category: string;
   imageUrl: string | null;
   purchasePriceCents: number;
@@ -119,6 +123,8 @@ export type CreateAdminProductInput = {
   slug: string;
   name: string;
   description: string;
+  categoryId: string;
+  categoryName: string;
   category: string;
   imageUrl: string | null;
   purchasePriceCents: number;
@@ -131,6 +137,8 @@ export type UpdateAdminProductInput = {
   productId: string;
   name: string;
   description: string;
+  categoryId: string;
+  categoryName: string;
   category: string;
   imageUrl: string | null;
   purchasePriceCents: number;
@@ -173,6 +181,8 @@ export class AdminRepository {
           p.slug,
           p.name,
           p.description,
+          p.category_id,
+          pc.name AS category_name,
           p.category,
           p.image_url,
           p.purchase_price_cents,
@@ -183,6 +193,7 @@ export class AdminRepository {
           p.created_at,
           p.updated_at
         FROM products p
+        LEFT JOIN product_categories pc ON pc.id = p.category_id
         LEFT JOIN inventory i ON i.product_id = p.id
         WHERE
           ($1::text IS NULL OR p.name ILIKE '%' || $1 || '%' OR p.description ILIKE '%' || $1 || '%')
@@ -209,6 +220,8 @@ export class AdminRepository {
           p.slug,
           p.name,
           p.description,
+          p.category_id,
+          pc.name AS category_name,
           p.category,
           p.image_url,
           p.purchase_price_cents,
@@ -219,6 +232,7 @@ export class AdminRepository {
           p.created_at,
           p.updated_at
         FROM products p
+        LEFT JOIN product_categories pc ON pc.id = p.category_id
         LEFT JOIN inventory i ON i.product_id = p.id
         WHERE p.id = $1
         LIMIT 1
@@ -238,6 +252,7 @@ export class AdminRepository {
           slug,
           name,
           description,
+          category_id,
           category,
           image_url,
           purchase_price_cents,
@@ -246,14 +261,15 @@ export class AdminRepository {
           is_active,
           updated_at
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TRUE, NOW())
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, TRUE, NOW())
         RETURNING id
       `,
       [
         input.slug,
         input.name,
         input.description,
-        input.category,
+        input.categoryId,
+        input.categoryName,
         input.imageUrl,
         input.purchasePriceCents,
         input.salePriceCents,
@@ -293,11 +309,12 @@ export class AdminRepository {
         SET
           name = $2,
           description = $3,
-          category = $4,
-          image_url = $5,
-          purchase_price_cents = $6,
-          price_cents = $7,
-          weight_grams = $8,
+          category_id = $4,
+          category = $5,
+          image_url = $6,
+          purchase_price_cents = $7,
+          price_cents = $8,
+          weight_grams = $9,
           updated_at = NOW()
         WHERE id = $1
         RETURNING id
@@ -306,7 +323,8 @@ export class AdminRepository {
         input.productId,
         input.name,
         input.description,
-        input.category,
+        input.categoryId,
+        input.categoryName,
         input.imageUrl,
         input.purchasePriceCents,
         input.salePriceCents,
@@ -618,6 +636,8 @@ export class AdminRepository {
           p.slug,
           p.name,
           p.description,
+          p.category_id,
+          pc.name AS category_name,
           p.category,
           p.image_url,
           p.purchase_price_cents,
@@ -628,6 +648,7 @@ export class AdminRepository {
           p.created_at,
           p.updated_at
         FROM products p
+        LEFT JOIN product_categories pc ON pc.id = p.category_id
         LEFT JOIN inventory i ON i.product_id = p.id
         WHERE p.id = $1
         LIMIT 1
@@ -685,6 +706,8 @@ export class AdminRepository {
       slug: record.slug,
       name: record.name,
       description: record.description,
+      categoryId: record.category_id,
+      categoryName: record.category_name ?? record.category,
       category: record.category,
       imageUrl: record.image_url,
       purchasePriceCents: record.purchase_price_cents,

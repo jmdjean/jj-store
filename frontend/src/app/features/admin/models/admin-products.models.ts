@@ -7,7 +7,8 @@ export type AdminProduct = {
   slug: string;
   name: string;
   description: string;
-  category: string;
+  categoryId: string;
+  categoryName: string;
   imageUrl: string | null;
   purchasePrice: number;
   salePrice: number;
@@ -35,7 +36,7 @@ export type AdminProductDetailResponse = {
 export type AdminProductPayload = {
   name: string;
   description: string;
-  category: string;
+  categoryId: string;
   quantity: number;
   weightGrams: number | null;
   purchasePrice: number;
