@@ -30,14 +30,23 @@
             />
 
             <div class="item-content">
-              <h2>{{ item.name }}</h2>
-              <p>{{ formatPrice(item.price) }} cada</p>
+              <div class="item-header">
+                <h2>{{ item.name }}</h2>
+                <span class="item-price">{{ formatPrice(item.price) }}</span>
+              </div>
+              <p class="item-meta">Preço unitário • {{ formatPrice(item.price) }}</p>
 
               <div class="item-actions">
-                <button type="button" (click)="decreaseQuantity(item.id, item.quantity)">-</button>
-                <span>{{ item.quantity }}</span>
-                <button type="button" (click)="increaseQuantity(item.id, item.quantity)">+</button>
-                <button type="button" class="ghost" (click)="removeItem(item.id)">Remover</button>
+                <div class="quantity-stepper" aria-label="Quantidade">
+                  <button type="button" (click)="decreaseQuantity(item.id, item.quantity)">-</button>
+                  <span>{{ item.quantity }}</span>
+                  <button type="button" (click)="increaseQuantity(item.id, item.quantity)">+</button>
+                </div>
+                <div class="item-subtotal">
+                  <span>Subtotal</span>
+                  <strong>{{ formatPrice(item.price * item.quantity) }}</strong>
+                </div>
+                <button type="button" class="link-danger" (click)="removeItem(item.id)">Remover</button>
               </div>
             </div>
           </li>
@@ -52,8 +61,19 @@
         <p>
           Subtotal <strong>{{ formatPrice(cartFacade.subtotal()) }}</strong>
         </p>
+        <p>
+          Frete <strong>A calcular</strong>
+        </p>
+        <p class="summary-total">
+          Total <strong>{{ formatPrice(cartFacade.subtotal()) }}</strong>
+        </p>
 
         <button type="button" (click)="goToCheckout()">Finalizar compra</button>
+        <div class="summary-trust">
+          <span>Compra segura</span>
+          <span>Pix e cartão</span>
+          <span>Entrega rápida</span>
+        </div>
       </aside>
     </div>
   }

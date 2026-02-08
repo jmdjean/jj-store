@@ -49,7 +49,9 @@
       <aside class="summary-card">
         <h2>Resumo do pedido</h2>
         <p>Itens: {{ cartFacade.totalItems() }}</p>
-        <p>Total: <strong>{{ formatPrice(cartFacade.subtotal()) }}</strong></p>
+        <p>Subtotal: <strong>{{ formatPrice(cartFacade.subtotal()) }}</strong></p>
+        <p>Frete: <strong>A calcular</strong></p>
+        <p class="summary-total">Total: <strong>{{ formatPrice(cartFacade.subtotal()) }}</strong></p>
 
         @if (cartFacade.checkoutError()) {
           <p class="error" role="alert">{{ cartFacade.checkoutError() }}</p>
@@ -64,6 +66,12 @@
         </button>
 
         <button type="button" class="ghost" (click)="backToCart()">Voltar ao carrinho</button>
+
+        <div class="summary-trust">
+          <span>Compra segura</span>
+          <span>Pagamento protegido</span>
+          <span>Entrega rápida</span>
+        </div>
       </aside>
     </div>
   }

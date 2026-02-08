@@ -16,7 +16,7 @@ describe('AdminProductsFacade', () => {
         slug: 'cafeteira-prime',
         name: 'Cafeteira Prime',
         description: 'Descrição',
-        category: 'Eletroportáteis',
+        categoryId: 'cat-1',
         imageUrl: null,
         purchasePrice: 350,
         salePrice: 799.9,
@@ -88,7 +88,7 @@ describe('AdminProductsFacade', () => {
         facade.createProduct({
           name: 'Cafeteira Prime',
           description: 'Descrição',
-          category: 'Eletroportáteis',
+          categoryId: 'cat-1',
           quantity: 7,
           weightGrams: 3000,
           purchasePrice: 350,

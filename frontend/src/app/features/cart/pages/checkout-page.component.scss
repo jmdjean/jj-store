@@ -68,7 +68,7 @@
     border: 0;
     background: var(--color-primary);
     color: var(--color-primary-foreground);
-    border-radius: 0.5rem;
+    border-radius: var(--radius-input);
     padding: var(--space-md) var(--space-xl);
     font: inherit;
     font-weight: 600;
@@ -87,7 +87,7 @@ button {
   border: 0;
   background: var(--color-primary);
   color: var(--color-primary-foreground);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-input);
   padding: var(--space-md) var(--space-xl);
   font: inherit;
   font-weight: 600;
@@ -116,9 +116,27 @@ button.ghost {
   }
 }
 
+.summary-total {
+  font-size: 1.05rem;
+  color: var(--color-text-primary);
+}
+
+.summary-trust {
+  margin-top: var(--space-lg);
+  display: grid;
+  gap: var(--space-xs);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
 @media (min-width: 960px) {
   .checkout-layout {
     grid-template-columns: 1fr 320px;
     align-items: start;
+  }
+
+  .summary-card {
+    position: sticky;
+    top: var(--space-lg);
   }
 }

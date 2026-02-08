@@ -7,6 +7,10 @@ import {
   type AdminPainelData,
   type AdminProductSnapshot,
 } from '../repositories/admin.repository.js';
+import {
+  ProductCategoriesRepository,
+  type ProductCategorySnapshot,
+} from '../repositories/product-categories.repository.js';
 import type {
   AdminOrderStatus,
   AdminOrderStatusMutationResponse,
@@ -48,7 +52,8 @@ const ADMIN_ORDER_STATUS_TRANSITIONS: Record<AdminOrderStatus, readonly AdminOrd
 type NormalizedAdminProductPayload = {
   name: string;
   description: string;
-  category: string;
+  categoryId: string;
+  categoryName: string;
   quantity: number;
   weightGrams: number | null;
   purchasePriceCents: number;
@@ -61,6 +66,7 @@ export class AdminService {
     private readonly adminRepository: AdminRepository,
     private readonly transactionRunner: TransactionRunner = runInTransaction,
     private readonly ragSyncService: RagSyncService = new RagSyncService(new RagRepository()),
+    private readonly productCategoriesRepository: ProductCategoriesRepository = new ProductCategoriesRepository(),
   ) {}
 
   // Retrieves administrative panel data from the repository.
@@ -190,16 +196,18 @@ export class AdminService {
     payload: AdminProductPayloadInput,
   ): Promise<AdminProductMutationResponse> {
     const normalizedActorUserId = this.requireActorUserId(actorUserId);
-    const normalizedPayload = this.normalizePayload(payload);
 
     const product = await this.transactionRunner(async (query) => {
+      const normalizedPayload = await this.normalizePayload(payload, query);
       const slug = await this.createUniqueSlug(query, normalizedPayload.name);
 
       const createdProduct = await this.adminRepository.createProduct(query, {
         slug,
         name: normalizedPayload.name,
         description: normalizedPayload.description,
-        category: normalizedPayload.category,
+        categoryId: normalizedPayload.categoryId,
+        categoryName: normalizedPayload.categoryName,
+        category: normalizedPayload.categoryName,
         imageUrl: normalizedPayload.imageUrl,
         purchasePriceCents: normalizedPayload.purchasePriceCents,
         salePriceCents: normalizedPayload.salePriceCents,
@@ -252,7 +260,6 @@ export class AdminService {
   ): Promise<AdminProductMutationResponse> {
     const normalizedActorUserId = this.requireActorUserId(actorUserId);
     const normalizedProductId = this.requireProductId(productId);
-    const normalizedPayload = this.normalizePayload(payload);
 
     const updatedProduct = await this.transactionRunner(async (query) => {
       const previousProduct = await this.adminRepository.findProductById(normalizedProductId);
@@ -261,11 +268,14 @@ export class AdminService {
         throw new AppError(404, 'Produto não encontrado.');
       }
 
+      const normalizedPayload = await this.normalizePayload(payload, query);
       const product = await this.adminRepository.updateProduct(query, {
         productId: normalizedProductId,
         name: normalizedPayload.name,
         description: normalizedPayload.description,
-        category: normalizedPayload.category,
+        categoryId: normalizedPayload.categoryId,
+        categoryName: normalizedPayload.categoryName,
+        category: normalizedPayload.categoryName,
         imageUrl: normalizedPayload.imageUrl,
         purchasePriceCents: normalizedPayload.purchasePriceCents,
         salePriceCents: normalizedPayload.salePriceCents,
@@ -366,10 +376,14 @@ export class AdminService {
   }
 
   // Validates create/update payload and converts numeric fields to database format.
-  private normalizePayload(payload: AdminProductPayloadInput): NormalizedAdminProductPayload {
+  private async normalizePayload(
+    payload: AdminProductPayloadInput,
+    query: QueryExecutor,
+  ): Promise<NormalizedAdminProductPayload> {
     const name = this.requireText(payload.name, 'Informe o nome do produto.');
     const description = this.requireText(payload.description, 'Informe a descrição do produto.');
-    const category = this.requireText(payload.category, 'Informe a categoria do produto.');
+    const categoryId = this.requireCategoryId(payload.categoryId);
+    const category = await this.requireCategory(query, categoryId);
     const quantity = this.parseQuantity(payload.quantity);
     const weightGrams = this.parseOptionalWeight(payload.weightGrams);
     const purchasePriceCents = this.parseMoney(payload.purchasePrice, 'preço de custo');
@@ -379,7 +393,8 @@ export class AdminService {
     return {
       name,
       description,
-      category,
+      categoryId: category.id,
+      categoryName: category.name,
       quantity,
       weightGrams,
       purchasePriceCents,
@@ -408,6 +423,35 @@ export class AdminService {
     }
 
     return normalizedProductId;
+  }
+
+  // Ensures a category identifier was provided for product payloads.
+  private requireCategoryId(categoryId: unknown): string {
+    if (typeof categoryId !== 'string') {
+      throw new AppError(400, 'Informe uma categoria válida.');
+    }
+
+    const normalizedCategoryId = categoryId.trim();
+
+    if (!normalizedCategoryId) {
+      throw new AppError(400, 'Informe uma categoria válida.');
+    }
+
+    return normalizedCategoryId;
+  }
+
+  // Loads and validates the referenced product category inside the transaction.
+  private async requireCategory(
+    query: QueryExecutor,
+    categoryId: string,
+  ): Promise<ProductCategorySnapshot> {
+    const category = await this.productCategoriesRepository.findById(query, categoryId);
+
+    if (!category) {
+      throw new AppError(404, 'Categoria não encontrada.');
+    }
+
+    return category;
   }
 
 
@@ -704,7 +748,8 @@ export class AdminService {
       slug: product.slug,
       name: product.name,
       description: product.description,
-      category: product.category,
+      categoryId: product.categoryId,
+      categoryName: product.categoryName,
       imageUrl: product.imageUrl,
       purchasePrice: product.purchasePriceCents / 100,
       salePrice: product.salePriceCents / 100,

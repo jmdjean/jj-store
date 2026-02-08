@@ -33,9 +33,27 @@
 
     <label>
       Categoria
-      <input type="text" formControlName="category" placeholder="Ex.: Eletroportáteis" />
-      @if (hasFieldError('category')) {
-        <span class="field-error">{{ getFieldError('category') }}</span>
+      <input
+        type="text"
+        #categorySearchInput
+        [value]="categorySearch()"
+        (input)="updateCategorySearch(categorySearchInput.value)"
+        placeholder="Buscar categoria..."
+        aria-label="Buscar categoria"
+      />
+      <select formControlName="categoryId" aria-label="Selecionar categoria">
+        <option value="">Selecione uma categoria</option>
+        @for (category of filteredCategories(); track category.id) {
+          <option [value]="category.id">{{ category.name }}</option>
+        }
+      </select>
+      @if (adminProductCategoriesFacade.loading()) {
+        <span class="field-hint">Carregando categorias...</span>
+      }
+      @if (adminProductCategoriesFacade.error()) {
+        <span class="field-error">{{ adminProductCategoriesFacade.error() }}</span>
+      } @else if (hasFieldError('categoryId')) {
+        <span class="field-error">{{ getFieldError('categoryId') }}</span>
       }
     </label>
 

@@ -1,0 +1,80 @@
+<section class="dashboard-page" aria-labelledby="dashboard-title">
+  <header class="page-header">
+    <div>
+      <h1 id="dashboard-title">Dashboard</h1>
+      <p>Resumo de vendas e desempenho do mês em andamento.</p>
+    </div>
+  </header>
+
+  @if (adminDashboardFacade.loading()) {
+    <div class="state-card" role="status">Carregando dados do dashboard...</div>
+  } @else if (adminDashboardFacade.error()) {
+    <div class="state-card state-card--error" role="alert">
+      <p>{{ adminDashboardFacade.error() }}</p>
+      <button type="button" class="secondary-button" (click)="retry()">Tentar novamente</button>
+    </div>
+  } @else if (adminDashboardFacade.summary(); as summary) {
+    <div class="dashboard-grid">
+      <div class="summary-cards">
+        <article class="summary-card">
+          <h2>Vendas do mês</h2>
+          <p class="summary-value">{{ summary.totalSales }}</p>
+          <p class="summary-meta">Receita: {{ formatCurrency(summary.totalRevenueCents) }}</p>
+          <p class="summary-caption">Referência: {{ summary.currentMonth.label }}</p>
+        </article>
+
+        <article class="summary-card">
+          <h2>Vendas por categoria</h2>
+          @if (summary.salesByCategory.length === 0) {
+            <p class="summary-empty">Nenhuma venda registrada neste mês.</p>
+          } @else {
+            <ul class="category-list">
+              @for (category of summary.salesByCategory; track category.category) {
+                <li>
+                  <span>{{ category.category }}</span>
+                  <strong>{{ category.totalSales }}</strong>
+                </li>
+              }
+            </ul>
+          }
+        </article>
+      </div>
+
+      <article class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h2>Comparativo mensal</h2>
+            <p>Pedidos confirmados no mês atual vs. mês anterior.</p>
+          </div>
+          <div class="chart-legend">
+            <span>
+              <span class="legend-dot legend-dot--current"></span>
+              {{ summary.currentMonth.label }}
+            </span>
+            <span>
+              <span class="legend-dot legend-dot--previous"></span>
+              {{ summary.previousMonth.label }}
+            </span>
+          </div>
+        </div>
+
+        @if (chartData(); as chart) {
+          <div class="chart">
+            <div class="chart-bar-group">
+              <div class="chart-bar chart-bar--current" [style.height]="getBarHeight(chart.currentMonth.totalSales, chart.maxSales)">
+                <span>{{ chart.currentMonth.totalSales }}</span>
+              </div>
+              <p>{{ chart.currentMonth.label }}</p>
+            </div>
+            <div class="chart-bar-group">
+              <div class="chart-bar chart-bar--previous" [style.height]="getBarHeight(chart.previousMonth.totalSales, chart.maxSales)">
+                <span>{{ chart.previousMonth.totalSales }}</span>
+              </div>
+              <p>{{ chart.previousMonth.label }}</p>
+            </div>
+          </div>
+        }
+      </article>
+    </div>
+  }
+</section>
