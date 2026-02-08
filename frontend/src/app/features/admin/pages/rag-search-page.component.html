@@ -1,55 +1,88 @@
 <section class="rag-page" aria-labelledby="titulo-rag">
-  <h2 id="titulo-rag">Pesquisar RAG</h2>
+  <header class="rag-page-header">
+    <h1 id="titulo-rag" class="rag-page-title">Pesquisa RAG</h1>
+    <p class="rag-page-subtitle">
+      Faça perguntas e receba respostas com base em vendas, estoque, produtos e clientes cadastrados.
+    </p>
+  </header>
 
-  <form [formGroup]="searchForm" (ngSubmit)="submitSearch()" class="rag-form">
-    <label for="pergunta">Pergunta</label>
-    <textarea
-      id="pergunta"
-      formControlName="query"
-      rows="4"
-      placeholder="Digite uma pergunta para pesquisar"
-    ></textarea>
+  <div class="rag-cards">
+    <div class="rag-card rag-card-form">
+      <h2 class="rag-card-title">Pergunta</h2>
+      <form [formGroup]="searchForm" (ngSubmit)="submitSearch()" class="rag-form">
+        <label for="pergunta" class="rag-label">Pergunta</label>
+        <textarea
+          id="pergunta"
+          formControlName="query"
+          class="rag-textarea"
+          rows="5"
+          placeholder="Ex.: Quais produtos têm maior estoque? Quem são os clientes cadastrados?"
+        ></textarea>
 
-    <div class="topk-field">
-      <label for="topK">Top K</label>
-      <input id="topK" type="number" min="1" max="20" formControlName="topK" />
+        <details class="rag-filters-details">
+          <summary>Filtrar por tipo (opcional)</summary>
+          <div class="rag-filters">
+            <label class="rag-checkbox-label">
+              <input type="checkbox" formControlName="product" />
+              Produtos
+            </label>
+            <label class="rag-checkbox-label">
+              <input type="checkbox" formControlName="customer" />
+              Clientes
+            </label>
+            <label class="rag-checkbox-label">
+              <input type="checkbox" formControlName="manager" />
+              Gestores
+            </label>
+            <label class="rag-checkbox-label">
+              <input type="checkbox" formControlName="order" />
+              Pedidos
+            </label>
+            <label class="rag-checkbox-label">
+              <input type="checkbox" formControlName="orderItem" />
+              Itens de pedido
+            </label>
+          </div>
+          <div class="rag-topk">
+            <label for="topK">Top K</label>
+            <input id="topK" type="number" min="1" max="20" formControlName="topK" class="rag-input-number" />
+          </div>
+        </details>
+
+        @if (errorMessage()) {
+          <p class="rag-error" role="alert">{{ errorMessage() }}</p>
+        }
+
+        <button type="submit" class="rag-submit" [disabled]="isLoading()">
+          {{ isLoading() ? 'Consultando...' : 'Consultar RAG' }}
+        </button>
+      </form>
     </div>
 
-    <fieldset>
-      <legend>Filtrar por tipo de entidade</legend>
-
-      <label><input type="checkbox" formControlName="product" /> Produtos</label>
-      <label><input type="checkbox" formControlName="customer" /> Clientes</label>
-      <label><input type="checkbox" formControlName="manager" /> Gestores</label>
-      <label><input type="checkbox" formControlName="order" /> Pedidos</label>
-      <label><input type="checkbox" formControlName="orderItem" /> Itens de pedido</label>
-    </fieldset>
-
-    <button type="submit" [disabled]="isLoading()">{{ isLoading() ? 'Pesquisando...' : 'Pesquisar' }}</button>
-  </form>
-
-  @if (errorMessage()) {
-    <p class="error">{{ errorMessage() }}</p>
-  }
-
-  <p class="message">{{ mensagem() }}</p>
-
-  <section class="results" aria-label="Fontes da pesquisa">
-    <h3>Fontes</h3>
-
-    @if (results().length === 0) {
-      <p>Nenhuma fonte para exibir.</p>
-    } @else {
-      <ul>
-        @for (result of results(); track result.entityId) {
-          <li>
-            <p><strong>Tipo:</strong> {{ result.entityType }}</p>
-            <p><strong>Identificador:</strong> {{ result.entityId }}</p>
-            <p><strong>Score:</strong> {{ result.score }}</p>
-            <p><strong>Trecho:</strong> {{ result.snippet }}</p>
-          </li>
+    <div class="rag-card rag-card-result">
+      <h2 class="rag-card-title">Resposta</h2>
+      <div class="rag-result-body">
+        @if (!hasSearched()) {
+          <p class="rag-result-placeholder">Envie uma pergunta para ver a resposta aqui.</p>
+        } @else if (isLoading()) {
+          <p class="rag-result-loading">Consultando base de conhecimento...</p>
+        } @else {
+          <p class="rag-result-mensagem">{{ mensagem() }}</p>
+          @if (results().length > 0) {
+            <div class="rag-result-sources" aria-label="Fontes da pesquisa">
+              <h3 class="rag-sources-title">Fontes</h3>
+              <ul class="rag-sources-list">
+                @for (result of results(); track result.entityId) {
+                  <li class="rag-source-item">
+                    <span class="rag-source-type">{{ result.entityType }}</span>
+                    <p class="rag-source-snippet">{{ result.snippet }}</p>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
         }
-      </ul>
-    }
-  </section>
+      </div>
+    </div>
+  </div>
 </section>

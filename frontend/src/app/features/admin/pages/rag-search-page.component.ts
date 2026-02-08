@@ -17,17 +17,10 @@ export class RagSearchPageComponent {
   private readonly ragApiService = inject(RagApiService);
 
   protected readonly isLoading = signal(false);
-  protected readonly mensagem = signal('Digite uma pergunta para pesquisar.');
+  protected readonly hasSearched = signal(false);
+  protected readonly mensagem = signal('');
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly results = signal<RagSearchResult[]>([]);
-
-  protected readonly entityOptions: Array<{ value: RagEntityType; label: string }> = [
-    { value: 'product', label: 'Produtos' },
-    { value: 'customer', label: 'Clientes' },
-    { value: 'manager', label: 'Gestores' },
-    { value: 'order', label: 'Pedidos' },
-    { value: 'order_item', label: 'Itens de pedido' },
-  ];
 
   protected readonly searchForm = this.formBuilder.nonNullable.group({
     query: [''],
@@ -51,6 +44,7 @@ export class RagSearchPageComponent {
 
     const selectedEntityTypes = this.resolveSelectedEntityTypes();
     this.errorMessage.set(null);
+    this.hasSearched.set(true);
     this.isLoading.set(true);
 
     this.ragApiService
