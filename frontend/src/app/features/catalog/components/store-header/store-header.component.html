@@ -1,23 +1,202 @@
 <header class="store-header">
-  <a class="brand" routerLink="/">
-    <span class="brand__name">JJ Store</span>
-    <span class="brand__subtitle">Catálogo online</span>
-  </a>
+  @if (!isSearchOpen()) {
+    <div class="store-header__inner">
+      <a class="brand" routerLink="/" aria-label="Ir para a página inicial">
+        <img src="/JJ-store-logo.png" alt="JJ Store" width="120" height="32" />
+      </a>
 
-  <form class="search" (submit)="onSubmit($event)" role="search" aria-label="Buscar produtos">
-    <input
-      type="search"
-      name="catalogSearch"
-      [ngModel]="searchValue"
-      (ngModelChange)="searchValue = $event"
-      placeholder="Buscar produtos"
-      aria-label="Buscar produtos"
-    />
-    <button type="submit">Buscar</button>
-  </form>
+      @if (showCustomerMenu) {
+        <nav class="customer-nav" aria-label="Menu do cliente">
+          <a routerLink="/minhas-compras" routerLinkActive="active">Pedidos</a>
+          <a routerLink="/minha-conta/perfil" routerLinkActive="active">Perfil</a>
+        </nav>
+      }
 
-  <a class="cart-button" routerLink="/carrinho" aria-label="Abrir carrinho">
-    Carrinho
-    <span class="cart-badge">{{ cartItems }}</span>
-  </a>
+      <div class="header-actions">
+        @if (showSearchAction) {
+          <button type="button" class="icon-button" aria-label="Pesquisar produtos" (click)="toggleSearch()">
+            <span class="icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="M20 20l-3.5-3.5"></path>
+              </svg>
+            </span>
+          </button>
+        }
+
+        <button type="button" class="icon-button" aria-label="Abrir carrinho" (click)="toggleCart()">
+          <span class="icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6h14l-2 9H8L6 6z"></path>
+              <circle cx="9" cy="20" r="1"></circle>
+              <circle cx="18" cy="20" r="1"></circle>
+              <path d="M4 4h2"></path>
+            </svg>
+          </span>
+          <span class="cart-count" aria-label="{{ cartFacade.totalItems() }} itens no carrinho">
+            {{ cartFacade.totalItems() }}
+          </span>
+        </button>
+
+        @if (!isAuthenticated()) {
+          <button type="button" class="icon-button" aria-label="Fazer login" (click)="goToCustomerLogin()">
+            <span class="icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4 20c1.8-4 13.2-4 16 0"></path>
+              </svg>
+            </span>
+          </button>
+        } @else {
+          <div class="profile-menu">
+            <button
+              type="button"
+              class="icon-button"
+              aria-label="Abrir menu do perfil"
+              (click)="toggleProfileMenu()"
+            >
+              <span class="icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4"></circle>
+                  <path d="M4 20c1.8-4 13.2-4 16 0"></path>
+                </svg>
+              </span>
+            </button>
+
+            @if (isProfileMenuOpen()) {
+              <div class="profile-dropdown" role="menu">
+                <div class="profile-dropdown__header">
+                  <span class="avatar">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <circle cx="12" cy="8" r="4"></circle>
+                      <path d="M4 20c1.8-4 13.2-4 16 0"></path>
+                    </svg>
+                  </span>
+                  <div>
+                    <p>{{ displayName() }}</p>
+                    <small>Conta do cliente</small>
+                  </div>
+                </div>
+                <button type="button" role="menuitem" (click)="goToProfile()">Perfil</button>
+                <button type="button" role="menuitem" (click)="goToOrders()">Pedidos</button>
+                <button type="button" role="menuitem" (click)="logout()">Sair</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="search-panel">
+      <form class="search-panel__form" (submit)="onSubmit($event)" role="search" aria-label="Buscar produtos">
+        <input
+          type="search"
+          name="catalogSearch"
+          [ngModel]="searchValue"
+          (ngModelChange)="searchValue = $event"
+          placeholder="Pesquisar"
+          aria-label="Buscar produtos"
+        />
+        <button type="submit">Buscar</button>
+      </form>
+      <button type="button" class="icon-button" aria-label="Fechar busca" (click)="closeSearch()">
+        <span class="icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 6l12 12"></path>
+            <path d="M18 6l-12 12"></path>
+          </svg>
+        </span>
+      </button>
+    </div>
+  }
 </header>
+
+@if (isCartOpen()) {
+  <div class="cart-backdrop" (click)="toggleCart()"></div>
+  <aside class="cart-drawer" aria-label="Carrinho de compras">
+    <header class="cart-drawer__header">
+      <div>
+        <h2>Carrinho</h2>
+        <p>{{ cartFacade.totalItems() }} itens</p>
+      </div>
+      <button type="button" class="icon-button" aria-label="Fechar carrinho" (click)="toggleCart()">
+        <span class="icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 6l12 12"></path>
+            <path d="M18 6l-12 12"></path>
+          </svg>
+        </span>
+      </button>
+    </header>
+
+    @if (!cartFacade.hasItems()) {
+      <div class="cart-empty">
+        <p>Seu carrinho está vazio.</p>
+        <button type="button" (click)="continueShopping()">Continuar comprando</button>
+      </div>
+    } @else {
+      <div class="cart-progress">
+        <div class="cart-progress__bar"></div>
+        <span>Você desbloqueou Frete Grátis</span>
+      </div>
+
+      <div class="cart-items">
+        @for (item of cartFacade.items(); track item.id) {
+          <article class="cart-item">
+            <img
+              [src]="item.imageUrl || 'https://placehold.co/120x160/f2f2f2/999?text=Produto'"
+              [alt]="item.name"
+            />
+            <div class="cart-item__info">
+              <h3>{{ item.name }}</h3>
+              <p>{{ formatPrice(item.price) }}</p>
+              <div class="cart-item__qty">
+                <button
+                  type="button"
+                  class="qty-button"
+                  aria-label="Diminuir quantidade"
+                  (click)="decreaseQuantity(item.id, item.quantity)"
+                >
+                  -
+                </button>
+                <span>{{ item.quantity }}</span>
+                <button
+                  type="button"
+                  class="qty-button"
+                  aria-label="Aumentar quantidade"
+                  (click)="increaseQuantity(item.id, item.quantity)"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="icon-button"
+              aria-label="Remover item"
+              (click)="removeItem(item.id)"
+            >
+              <span class="icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 7h12"></path>
+                  <path d="M9 7v10"></path>
+                  <path d="M15 7v10"></path>
+                  <path d="M10 4h4l1 2H9l1-2z"></path>
+                </svg>
+              </span>
+            </button>
+          </article>
+        }
+      </div>
+
+      <footer class="cart-drawer__footer">
+        <div class="cart-totals">
+          <span>Subtotal</span>
+          <strong>{{ formatPrice(cartFacade.subtotal()) }}</strong>
+        </div>
+        <button type="button" class="primary" (click)="goToCheckout()">Finalizar a compra</button>
+        <button type="button" class="ghost" (click)="continueShopping()">Continuar comprando</button>
+      </footer>
+    }
+  </aside>
+}

@@ -1,96 +1,122 @@
 <section class="profile-page" aria-labelledby="profile-title">
-  <header class="page-header">
-    <p class="eyebrow">Minha conta</p>
-    <h2 id="profile-title">Perfil do cliente</h2>
-    <p>Atualize seus dados pessoais, contato e endereço de entrega.</p>
-  </header>
+  <app-store-header [searchValue]="''" [showSearchAction]="false" [showCustomerMenu]="true" />
 
-  @if (facade.profileLoading()) {
-    <p class="state loading" role="status">Carregando perfil...</p>
-  }
+  <div class="profile-container">
+    <header class="page-header">
+      <h2 id="profile-title">Perfil</h2>
+      <p>Atualize seus dados pessoais, contato e endereço de entrega.</p>
+    </header>
 
-  @if (facade.profileError()) {
-    <p class="state error" role="alert">{{ facade.profileError() }}</p>
-  }
-
-  @if (facade.saveMessage()) {
-    <p class="state success" role="status">{{ facade.saveMessage() }}</p>
-  }
-
-  @if (facade.saveError()) {
-    <p class="state error" role="alert">{{ facade.saveError() }}</p>
-  }
-
-  <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
-    <div class="grid">
-      <label>
-        CPF
-        <input type="text" formControlName="cpf" readonly aria-readonly="true" />
-      </label>
-      <label>
-        Nome completo
-        <input type="text" formControlName="fullName" />
-      </label>
-      <label>
-        Data de nascimento
-        <input type="date" formControlName="birthDate" />
-      </label>
-      <label>
-        E-mail
-        <input type="email" formControlName="email" />
-        @if (hasError('email')) {
-          <span class="field-error">{{ getControlMessage('email') }}</span>
-        }
-      </label>
-      <label>
-        Telefone
-        <input type="text" formControlName="phone" placeholder="(11) 99999-9999" appPhoneMask />
-        @if (hasError('phone')) {
-          <span class="field-error">{{ getControlMessage('phone') }}</span>
-        }
-      </label>
-      <label>
-        Rua
-        <input type="text" formControlName="street" />
-      </label>
-      <label>
-        Número
-        <input type="text" formControlName="streetNumber" />
-      </label>
-      <label>
-        Bairro
-        <input type="text" formControlName="neighborhood" />
-      </label>
-      <label>
-        Cidade
-        <input type="text" formControlName="city" />
-      </label>
-      <label>
-        UF
-        <input type="text" formControlName="state" maxlength="2" />
-      </label>
-      <label>
-        CEP
-        <input type="text" formControlName="postalCode" maxlength="8" />
-      </label>
-      <label class="full-row">
-        Complemento
-        <input type="text" formControlName="complement" />
-      </label>
-    </div>
-
-    @if (hasError('email') || hasError('phone')) {
-      <p class="field-error">Verifique os dados de contato informados.</p>
+    @if (facade.profileLoading()) {
+      <p class="state loading" role="status">Carregando perfil...</p>
     }
 
-    @if (hasError('fullName') || hasError('street') || hasError('streetNumber') || hasError('neighborhood') || hasError('city') || hasError('state') || hasError('postalCode')) {
-      <p class="field-error">Verifique os campos obrigatórios antes de salvar.</p>
+    @if (facade.profileError()) {
+      <p class="state error" role="alert">{{ facade.profileError() }}</p>
     }
 
-    <div class="actions">
-      <button type="submit" [disabled]="facade.saveLoading() || facade.profileLoading()">
-        {{ facade.saveLoading() ? 'Salvando...' : 'Salvar alterações' }}
-      </button>
-    </div>
-  </form>
+    @if (facade.saveMessage()) {
+      <p class="state success" role="status">{{ facade.saveMessage() }}</p>
+    }
+
+    @if (facade.saveError()) {
+      <p class="state error" role="alert">{{ facade.saveError() }}</p>
+    }
+
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
+      <div class="card">
+        <h3>Dados pessoais</h3>
+        <div class="grid">
+          <label>
+            CPF
+            <input type="text" formControlName="cpf" readonly aria-readonly="true" />
+          </label>
+          <label>
+            Nome completo
+            <input type="text" formControlName="fullName" />
+          </label>
+          <label>
+            Data de nascimento
+            <input type="date" formControlName="birthDate" />
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Contato</h3>
+        <div class="grid">
+          <label>
+            E-mail
+            <input type="email" formControlName="email" />
+            @if (hasError('email')) {
+              <span class="field-error">{{ getControlMessage('email') }}</span>
+            }
+          </label>
+          <label>
+            Telefone
+            <input type="text" formControlName="phone" placeholder="(11) 99999-9999" appPhoneMask />
+            @if (hasError('phone')) {
+              <span class="field-error">{{ getControlMessage('phone') }}</span>
+            }
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Endereço de entrega</h3>
+        <div class="grid">
+          <label>
+            Rua
+            <input type="text" formControlName="street" />
+          </label>
+          <label>
+            Número
+            <input type="text" formControlName="streetNumber" />
+          </label>
+          <label>
+            Bairro
+            <input type="text" formControlName="neighborhood" />
+          </label>
+          <label>
+            Cidade
+            <input type="text" formControlName="city" />
+          </label>
+          <label>
+            UF
+            <input type="text" formControlName="state" maxlength="2" />
+          </label>
+          <label>
+            CEP
+            <input type="text" formControlName="postalCode" maxlength="8" />
+          </label>
+          <label class="full-row">
+            Complemento
+            <input type="text" formControlName="complement" />
+          </label>
+        </div>
+      </div>
+
+      @if (hasError('email') || hasError('phone')) {
+        <p class="field-error">Verifique os dados de contato informados.</p>
+      }
+
+      @if (
+        hasError('fullName') ||
+        hasError('street') ||
+        hasError('streetNumber') ||
+        hasError('neighborhood') ||
+        hasError('city') ||
+        hasError('state') ||
+        hasError('postalCode')
+      ) {
+        <p class="field-error">Verifique os campos obrigatórios antes de salvar.</p>
+      }
+
+      <div class="actions">
+        <button type="submit" [disabled]="facade.saveLoading() || facade.profileLoading()">
+          {{ facade.saveLoading() ? 'Salvando...' : 'Salvar alterações' }}
+        </button>
+      </div>
+    </form>
+  </div>
 </section>

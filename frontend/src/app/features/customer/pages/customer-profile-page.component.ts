@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { StoreHeaderComponent } from '../../catalog/components/store-header/store-header.component';
 import { PhoneMaskDirective } from '../../../core/directives/phone-mask.directive';
 import { phoneValidator } from '../../../core/validators/phone.validator';
 import { CustomerProfileFacade } from '../facade/customer-profile.facade';
@@ -8,7 +9,7 @@ import type { CustomerProfile, UpdateCustomerProfilePayload } from '../models/cu
 @Component({
   selector: 'app-customer-profile-page',
   standalone: true,
-  imports: [ReactiveFormsModule, PhoneMaskDirective],
+  imports: [ReactiveFormsModule, PhoneMaskDirective, StoreHeaderComponent],
   templateUrl: './customer-profile-page.component.html',
   styleUrl: './customer-profile-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

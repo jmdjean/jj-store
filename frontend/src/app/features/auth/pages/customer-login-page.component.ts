@@ -1,0 +1,89 @@
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { finalize } from 'rxjs/operators';
+import { AuthService } from '../../../core/services/auth.service';
+import type { ApiErrorResponse } from '../../../core/models/auth.models';
+
+@Component({
+  selector: 'app-customer-login-page',
+  standalone: true,
+  imports: [ReactiveFormsModule, RouterLink],
+  templateUrl: './customer-login-page.component.html',
+  styleUrl: './customer-login-page.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class CustomerLoginPageComponent {
+  private readonly formBuilder = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  protected readonly carregando = signal(false);
+  protected readonly mensagemErro = signal('');
+
+  protected readonly form = this.formBuilder.group({
+    identificador: ['', [Validators.required]],
+    senha: ['', [Validators.required, Validators.minLength(6)]],
+  });
+
+  // Validates credentials and triggers the login flow for customers.
+  protected submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.mensagemErro.set('Preencha os campos obrigatórios para continuar.');
+      return;
+    }
+
+    const identificador = this.form.controls.identificador.value ?? '';
+    const senha = this.form.controls.senha.value ?? '';
+    this.carregando.set(true);
+    this.mensagemErro.set('');
+
+    this.authService
+      .login({
+        identificador,
+        senha,
+      })
+      .pipe(finalize(() => this.carregando.set(false)))
+      .subscribe({
+        next: () => {
+          const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+          void this.router.navigateByUrl(returnUrl || '/');
+        },
+        error: (error: unknown) => {
+          this.mensagemErro.set(this.resolveApiErrorMessage(error));
+        },
+      });
+  }
+
+  // Indicates whether the identifier field is currently invalid.
+  protected get identificadorInvalido(): boolean {
+    const control = this.form.controls.identificador;
+    return control.invalid && (control.touched || control.dirty);
+  }
+
+  // Indicates whether the password field is currently invalid.
+  protected get senhaInvalida(): boolean {
+    const control = this.form.controls.senha;
+    return control.invalid && (control.touched || control.dirty);
+  }
+
+  // Returns query params to preserve returnUrl when navigating to signup.
+  protected get cadastroQueryParams(): { returnUrl?: string } {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    return returnUrl ? { returnUrl } : {};
+  }
+
+  // Resolves the best API error message for login failures.
+  private resolveApiErrorMessage(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return 'Não foi possível realizar o login agora. Tente novamente.';
+    }
+
+    const apiError = error.error as ApiErrorResponse | undefined;
+    return apiError?.mensagem ?? 'Não foi possível realizar o login agora. Tente novamente.';
+  }
+}

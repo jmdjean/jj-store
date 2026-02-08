@@ -1,78 +1,76 @@
 <section class="checkout-page">
-  <app-store-header
-    [searchValue]="''"
-    [cartItems]="cartFacade.totalItems()"
-    (searchChange)="onSearch($event)"
-  />
+  <app-store-header [searchValue]="''" [showSearchAction]="false" />
 
-  <header class="page-header">
-    <h1>Checkout</h1>
-    <p>Confirme os dados de entrega e finalize a compra.</p>
-  </header>
+  <div class="checkout-container">
+    <header class="page-header">
+      <h1>Checkout</h1>
+      <p>Confirme os dados e finalize sua compra.</p>
+    </header>
 
-  @if (!cartFacade.hasItems() && !cartFacade.hasCheckoutSuccess()) {
-    <div class="state-card" role="status">
-      <p>Seu carrinho está vazio.</p>
-      <button type="button" (click)="backToCart()">Voltar ao carrinho</button>
-    </div>
-  } @else if (cartFacade.hasCheckoutSuccess()) {
-    <div class="state-card state-card--success" role="status">
-      <h2>Pedido confirmado</h2>
-      <p>{{ cartFacade.checkoutMessage() }}</p>
-      <p><strong>Número do pedido:</strong> {{ cartFacade.checkoutOrderId() }}</p>
-      <div class="success-actions">
-        <a routerLink="/minhas-compras" class="button primary">Ver meus pedidos</a>
-        <button type="button" (click)="goToCatalog()">Voltar ao catálogo</button>
+    @if (!cartFacade.hasItems()) {
+      <div class="state-card" role="status">
+        <p>Seu carrinho está vazio.</p>
+        <button type="button" (click)="backToCart()">Voltar ao carrinho</button>
       </div>
-    </div>
-  } @else {
-    <div class="checkout-layout">
-      <article class="address-card">
-        <h2>Endereço de entrega</h2>
+    } @else {
+      <div class="checkout-layout">
+        <article class="address-card">
+          <h2>Informações</h2>
 
-        @if (cartFacade.addressLoading()) {
-          <p>Carregando endereço...</p>
-        } @else if (cartFacade.addressError()) {
-          <p class="error" role="alert">{{ cartFacade.addressError() }}</p>
-        } @else if (cartFacade.profileAddress(); as address) {
-          <p>{{ address.street }}, {{ address.streetNumber }}</p>
-          <p>{{ address.neighborhood }} - {{ address.city }}/{{ address.state }}</p>
-          <p>CEP: {{ address.postalCode }}</p>
-          @if (address.complement) {
-            <p>Complemento: {{ address.complement }}</p>
+          @if (cartFacade.addressLoading()) {
+            <p>Carregando endereço...</p>
+          } @else if (cartFacade.addressError()) {
+            <p class="error" role="alert">{{ cartFacade.addressError() }}</p>
+          } @else if (cartFacade.profileAddress(); as address) {
+            <div class="contact-block">
+              <p class="label">Contato</p>
+              <p class="value">Endereço cadastrado no perfil</p>
+            </div>
+
+            <div class="address-block">
+              <p class="label">Endereço de entrega</p>
+              <p class="value">{{ address.street }}, {{ address.streetNumber }}</p>
+              <p class="value">{{ address.neighborhood }} - {{ address.city }}/{{ address.state }}</p>
+              <p class="value">CEP: {{ address.postalCode }}</p>
+              @if (address.complement) {
+                <p class="value">Complemento: {{ address.complement }}</p>
+              }
+            </div>
+          } @else {
+            <p class="error">Não encontramos endereço no seu perfil.</p>
           }
-        } @else {
-          <p class="error">Não encontramos endereço no seu perfil.</p>
-        }
-      </article>
 
-      <aside class="summary-card">
-        <h2>Resumo do pedido</h2>
-        <p>Itens: {{ cartFacade.totalItems() }}</p>
-        <p>Subtotal: <strong>{{ formatPrice(cartFacade.subtotal()) }}</strong></p>
-        <p>Frete: <strong>A calcular</strong></p>
-        <p class="summary-total">Total: <strong>{{ formatPrice(cartFacade.subtotal()) }}</strong></p>
+          <div class="actions">
+            <button type="button" class="ghost" (click)="backToCart()">Voltar ao carrinho</button>
+          </div>
+        </article>
 
-        @if (cartFacade.checkoutError()) {
-          <p class="error" role="alert">{{ cartFacade.checkoutError() }}</p>
-        }
+        <aside class="summary-card">
+          <h2>Pagamento</h2>
+          <p class="summary-label">Subtotal</p>
+          <p class="summary-value">{{ formatPrice(cartFacade.subtotal()) }}</p>
+          <p class="summary-label">Desconto no pedido</p>
+          <p class="summary-value">R$ 0,00</p>
+          <p class="summary-label">Frete</p>
+          <p class="summary-value">R$ 0,00</p>
+          <div class="summary-total">
+            <span>Total</span>
+            <strong>{{ formatPrice(cartFacade.subtotal()) }}</strong>
+          </div>
 
-        <button
-          type="button"
-          [disabled]="cartFacade.checkoutLoading() || cartFacade.addressLoading()"
-          (click)="finalizeCheckout()"
-        >
-          {{ cartFacade.checkoutLoading() ? 'Finalizando...' : 'Confirmar compra' }}
-        </button>
+          @if (cartFacade.checkoutError()) {
+            <p class="error" role="alert">{{ cartFacade.checkoutError() }}</p>
+          }
 
-        <button type="button" class="ghost" (click)="backToCart()">Voltar ao carrinho</button>
-
-        <div class="summary-trust">
-          <span>Compra segura</span>
-          <span>Pagamento protegido</span>
-          <span>Entrega rápida</span>
-        </div>
-      </aside>
-    </div>
-  }
+          <button
+            type="button"
+            [disabled]="cartFacade.checkoutLoading() || cartFacade.addressLoading()"
+            (click)="finalizeCheckout()"
+          >
+            {{ cartFacade.checkoutLoading() ? 'Finalizando...' : 'Finalizar a compra' }}
+          </button>
+        </aside>
+      </div>
+    }
+  </div>
 </section>

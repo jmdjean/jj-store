@@ -20,13 +20,6 @@ export class MyOrdersPageComponent implements OnInit {
     this.loadOrders(this.myOrdersFacade.paginationMeta().page);
   }
 
-  // Redirects search requests to catalog query route.
-  protected onSearch(searchText: string): void {
-    void this.router.navigate(['/'], {
-      queryParams: searchText ? { q: searchText } : {},
-    });
-  }
-
   // Loads orders for a selected page and handles API failures.
   protected loadOrders(page: number): void {
     this.myOrdersFacade.loadOrders(page).subscribe({
@@ -100,5 +93,10 @@ export class MyOrdersPageComponent implements OnInit {
 
     const nextPage = this.myOrdersFacade.paginationMeta().page + 1;
     this.loadOrders(nextPage);
+  }
+
+  // Navigates back to the catalog landing page.
+  protected goToCatalog(): void {
+    void this.router.navigate(['/']);
   }
 }

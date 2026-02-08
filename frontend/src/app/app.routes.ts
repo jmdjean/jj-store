@@ -8,6 +8,13 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/routes').then((module) => module.AUTH_ROUTES),
   },
   {
+    path: 'login-cliente',
+    loadComponent: () =>
+      import('./features/auth/pages/customer-login-page.component').then(
+        (module) => module.CustomerLoginPageComponent,
+      ),
+  },
+  {
     path: 'cadastro',
     loadChildren: () =>
       import('./features/customer/routes').then((module) => module.CUSTOMER_SIGNUP_ROUTES),

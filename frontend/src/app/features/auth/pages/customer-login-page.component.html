@@ -3,10 +3,6 @@
     <img src="/JJ-store-logo.png" alt="JJ Store" class="brand-logo" />
     <h1>Fazer login</h1>
 
-    @if (showRegisteredMessage) {
-      <p class="success-message">Cadastro concluído com sucesso. Faça login para continuar.</p>
-    }
-
     @if (mensagemErro()) {
       <p class="error-message" role="alert">{{ mensagemErro() }}</p>
     }
